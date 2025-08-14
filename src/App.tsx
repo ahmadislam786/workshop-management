@@ -1,0 +1,81 @@
+import React, { useState } from "react";
+import { AuthProvider } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/useAuth";
+import { Layout } from "@/components/shared/Layout";
+import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
+import { TechnicianDashboard } from "@/components/dashboard/TechnicianDashboard";
+import { JobList } from "@/components/jobs/JobList";
+import { JobCalendar } from "@/components/jobs/JobCalendar";
+import { CustomerList } from "@/components/customers/CustomerList";
+import { TechnicianList } from "@/components/technicians/TechnicianList";
+import { VehicleList } from "@/components/vehicles/VehicleList";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const AppContent: React.FC = () => {
+  const { profile } = useAuth();
+  const [activeTab, setActiveTab] = useState("dashboard");
+
+  if (!profile) {
+    return <LoginForm />;
+  }
+
+  const renderContent = () => {
+    if (profile.role === "admin") {
+      switch (activeTab) {
+        case "dashboard":
+          return <AdminDashboard onNavigate={setActiveTab} />;
+        case "jobs":
+          return <JobList />;
+        case "calendar":
+          return <JobCalendar />;
+        case "customers":
+          return <CustomerList />;
+        case "vehicles":
+          return <VehicleList />;
+        case "technicians":
+          return <TechnicianList />;
+        default:
+          return <AdminDashboard onNavigate={setActiveTab} />;
+      }
+    } else {
+      // Technician routing - limited access
+      switch (activeTab) {
+        case "dashboard":
+          return <TechnicianDashboard />;
+        case "jobs":
+          return <JobList />;
+        default:
+          return <TechnicianDashboard />;
+      }
+    }
+  };
+
+  return (
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {renderContent()}
+    </Layout>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+    </AuthProvider>
+  );
+};
+
+export default App;

@@ -1,0 +1,155 @@
+// =====================================================
+// TYPE DEFINITIONS
+// =====================================================
+
+/**
+ * User authentication interface
+ */
+export interface User {
+  id: string;
+  email: string;
+}
+
+/**
+ * User profile interface
+ */
+export interface Profile {
+  id: string;
+  user_id: string;
+  role: "admin" | "technician";
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Customer interface
+ */
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  status: "active" | "inactive";
+  created_at: string;
+}
+
+/**
+ * Vehicle interface
+ */
+export interface Vehicle {
+  id: string;
+  make: string;
+  model: string;
+  license_plate: string;
+  year: number;
+  customer_id: string;
+  created_at: string;
+}
+
+/**
+ * Technician interface
+ */
+export interface Technician {
+  id: string;
+  profile_id: string;
+  name: string;
+  email: string;
+  specialization?: string;
+  phone?: string;
+  job_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Job status types
+ */
+export type JobStatus = "pending" | "scheduled" | "in_progress" | "completed" | "cancelled";
+
+/**
+ * Job source types
+ */
+export type JobSource = "email" | "manual";
+
+/**
+ * Job interface
+ */
+export interface Job {
+  id: string;
+  customer_id: string;
+  vehicle_id: string;
+  technician_id?: string;
+  service_type: string;
+  status: JobStatus;
+  time_frame?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
+  parts_needed?: string;
+  duration_hours?: number;
+  ai_duration_hour?: number;
+  source: JobSource;
+  notes?: string;
+  created_at: string;
+  // Related data (populated by joins)
+  customer?: Customer;
+  vehicle?: Vehicle;
+  technician?: Technician;
+}
+
+/**
+ * Form data interfaces for better type safety
+ */
+export interface CreateUserData {
+  email: string;
+  password: string;
+  name: string;
+  role: "admin" | "technician";
+  specialization?: string;
+  phone?: string;
+}
+
+export interface CreateCustomerData {
+  name: string;
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+}
+
+export interface CreateVehicleData {
+  make: string;
+  model: string;
+  license_plate: string;
+  year: number;
+  customer_id: string;
+}
+
+export interface CreateJobData {
+  customer_id: string;
+  vehicle_id: string;
+  technician_id?: string;
+  service_type: string;
+  time_frame?: string;
+  scheduled_start?: string;
+  scheduled_end?: string;
+  parts_needed?: string;
+  duration_hours?: number;
+  notes?: string;
+}
+
+/**
+ * API response interfaces
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface UserCreationResult {
+  success: boolean;
+  userId?: string;
+  profileId?: string;
+  requiresEmailConfirmation?: boolean;
+  error?: string;
+}
