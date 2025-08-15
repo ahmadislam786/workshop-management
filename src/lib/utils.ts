@@ -15,9 +15,11 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
  */
 export const formatDate = (date: string | Date): string => {
   try {
-    return new Date(date).toLocaleDateString();
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return "Invalid date";
+    return dateObj.toLocaleDateString();
   } catch {
-    return "Invalid Date";
+    return "Invalid date";
   }
 };
 
@@ -26,9 +28,43 @@ export const formatDate = (date: string | Date): string => {
  */
 export const formatDateTime = (date: string | Date): string => {
   try {
-    return new Date(date).toLocaleString();
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return "Invalid date/time";
+    return `${formatDate(dateObj)} at ${formatTime(dateObj)}`;
   } catch {
-    return "Invalid Date";
+    return "Invalid date/time";
+  }
+};
+
+/**
+ * Format time to readable string
+ */
+export const formatTime = (date: string | Date): string => {
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return "Invalid time";
+    return dateObj.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "Invalid time";
+  }
+};
+
+/**
+ * Format date to short format (e.g., "Jan 15")
+ */
+export const formatDateShort = (date: string | Date): string => {
+  try {
+    const dateObj = new Date(date);
+    if (isNaN(dateObj.getTime())) return "Invalid date";
+    return dateObj.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return "Invalid date";
   }
 };
 
@@ -62,10 +98,12 @@ export const capitalize = (str: string): string => {
  */
 export const formatPhone = (phone: string): string => {
   if (!phone) return phone;
-  
+
   const cleaned = phone.replace(/\D/g, "");
   if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(
+      6
+    )}`;
   }
   return phone;
 };
@@ -97,4 +135,58 @@ export const debounce = <T extends (...args: any[]) => any>(
  */
 export const generateId = (): string => {
   return Math.random().toString(36).substr(2, 9);
+};
+
+/**
+ * Format datetime-local value to readable string without timezone conversion
+ */
+export const formatDateTimeLocal = (dateTimeString: string): string => {
+  try {
+    if (!dateTimeString) return "No time set";
+
+    // Split the datetime-local string (format: "2025-08-18T22:00")
+    const [datePart, timePart] = dateTimeString.split("T");
+
+    if (!datePart || !timePart) return "Invalid format";
+
+    // Parse date parts
+    const [year, month, day] = datePart.split("-").map(Number);
+    const [hour, minute] = timePart.split(":").map(Number);
+
+    // Create date object in local timezone
+    const date = new Date(year, month - 1, day, hour, minute);
+
+    // Format the date and time
+    const dateStr = date.toLocaleDateString();
+    const timeStr = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    return `${dateStr} at ${timeStr}`;
+  } catch (error) {
+    return "Invalid date/time";
+  }
+};
+
+/**
+ * Format time from datetime-local value
+ */
+export const formatTimeFromLocal = (dateTimeString: string): string => {
+  try {
+    if (!dateTimeString) return "No time set";
+
+    const timePart = dateTimeString.split("T")[1];
+    if (!timePart) return "Invalid format";
+
+    const [hour, minute] = timePart.split(":").map(Number);
+    const date = new Date(2000, 0, 1, hour, minute); // Use arbitrary date, just for time formatting
+
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "Invalid time";
+  }
 };

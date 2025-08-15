@@ -7,6 +7,7 @@ import { StatsCards } from "./StatsCards";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { PasswordManagement } from "@/components/admin/PasswordManagement";
 import type { Job } from "../../types";
+import { formatTimeFromLocal, formatDateTimeLocal } from "@/lib/utils";
 import {
   Calendar,
   Wrench,
@@ -115,22 +116,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const getJobsForDate = (date: Date) => {
-    if (!jobs || !Array.isArray(jobs)) return [];
-
     return jobs.filter((job) => {
       if (!job.scheduled_start) return false;
-      try {
-        const jobDate = new Date(job.scheduled_start);
-        if (isNaN(jobDate.getTime())) return false; // Invalid date
-
-        return (
-          jobDate.getDate() === date.getDate() &&
-          jobDate.getMonth() === date.getMonth() &&
-          jobDate.getFullYear() === date.getFullYear()
-        );
-      } catch {
-        return false;
-      }
+      const jobDate = new Date(job.scheduled_start);
+      return (
+        jobDate.getDate() === date.getDate() &&
+        jobDate.getMonth() === date.getMonth() &&
+        jobDate.getFullYear() === date.getFullYear()
+      );
     });
   };
 
@@ -152,17 +145,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const formatTime = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return "Invalid time";
-
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return "Invalid time";
-    }
+    return formatTimeFromLocal(dateString);
   };
 
   const handleDateClick = (date: Date) => {
@@ -485,16 +468,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
                     {job.scheduled_start
-                      ? (() => {
-                          try {
-                            const date = new Date(job.scheduled_start);
-                            return isNaN(date.getTime())
-                              ? "Invalid date"
-                              : date.toLocaleDateString();
-                          } catch {
-                            return "Invalid date";
-                          }
-                        })()
+                      ? formatDateTimeLocal(job.scheduled_start)
                       : "No date"}
                   </p>
                   <div className="flex space-x-2 mt-2">

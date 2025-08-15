@@ -47,6 +47,39 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
     notes: job?.notes || "",
   });
 
+  // Auto-calculate duration when start/end times change
+  const calculateDuration = (start: string, end: string) => {
+    if (start && end) {
+      const startTime = new Date(start);
+      const endTime = new Date(end);
+      if (startTime < endTime) {
+        const diffMs = endTime.getTime() - startTime.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        return Math.round(diffHours * 10) / 10; // Round to 1 decimal place
+      }
+    }
+    return undefined;
+  };
+
+  const handleTimeChange = (
+    field: "scheduled_start" | "scheduled_end",
+    value: string
+  ) => {
+    const newFormData = { ...formData, [field]: value };
+
+    // Auto-calculate duration if both times are set
+    if (field === "scheduled_start" && newFormData.scheduled_end) {
+      const duration = calculateDuration(value, newFormData.scheduled_end);
+      newFormData.duration_hours = duration;
+    } else if (field === "scheduled_end" && newFormData.scheduled_start) {
+      const duration = calculateDuration(newFormData.scheduled_start, value);
+      newFormData.duration_hours = duration;
+    }
+
+    setFormData(newFormData);
+    setErrors({ ...errors, [field]: "" });
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -259,8 +292,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 type="datetime-local"
                 value={formData.scheduled_start}
                 onChange={(e) => {
-                  setFormData({ ...formData, scheduled_start: e.target.value });
-                  setErrors({ ...errors, scheduled_start: "" });
+                  handleTimeChange("scheduled_start", e.target.value);
                 }}
                 leftIcon={<Clock className="h-4 w-4" />}
               />
@@ -270,8 +302,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 type="datetime-local"
                 value={formData.scheduled_end}
                 onChange={(e) => {
-                  setFormData({ ...formData, scheduled_end: e.target.value });
-                  setErrors({ ...errors, scheduled_end: "" });
+                  handleTimeChange("scheduled_end", e.target.value);
                 }}
                 leftIcon={<Clock className="h-4 w-4" />}
                 error={errors.scheduled_end}
@@ -291,6 +322,11 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <Clock className="h-4 w-4 inline mr-2" />
                     Duration (hours)
+                    {formData.scheduled_start && formData.scheduled_end && (
+                      <span className="text-xs text-blue-600 ml-2">
+                        (Auto-calculated)
+                      </span>
+                    )}
                   </label>
                   <input
                     type="number"
@@ -305,8 +341,20 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                           : undefined,
                       })
                     }
-                    className="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                    className={`block w-full border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 ${
+                      formData.scheduled_start && formData.scheduled_end
+                        ? "bg-gray-50 text-gray-600"
+                        : ""
+                    }`}
                     placeholder="2.5"
+                    readOnly={
+                      !!(formData.scheduled_start && formData.scheduled_end)
+                    }
+                    title={
+                      formData.scheduled_start && formData.scheduled_end
+                        ? "Duration is automatically calculated from start and end times"
+                        : ""
+                    }
                   />
                 </div>
 

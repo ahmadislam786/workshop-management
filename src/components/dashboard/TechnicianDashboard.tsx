@@ -10,6 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import { formatTimeFromLocal, formatDateShort } from "@/lib/utils";
 
 export const TechnicianDashboard: React.FC = () => {
   const { technician } = useAuth();
@@ -321,15 +322,8 @@ export const TechnicianDashboard: React.FC = () => {
                         {job.scheduled_start && (
                           <div className="text-sm text-gray-600 mb-2">
                             <span>
-                              Scheduled:{" "}
-                              {new Date(
-                                job.scheduled_start
-                              ).toLocaleDateString()}{" "}
-                              at{" "}
-                              {new Date(job.scheduled_start).toLocaleTimeString(
-                                [],
-                                { hour: "2-digit", minute: "2-digit" }
-                              )}
+                              Scheduled: {formatDateShort(job.scheduled_start)}{" "}
+                              at {formatTimeFromLocal(job.scheduled_start)}
                             </span>
                           </div>
                         )}

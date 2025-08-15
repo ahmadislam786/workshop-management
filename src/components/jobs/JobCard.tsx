@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JobForm } from "./JobForm";
-import { getStatusColor } from "@/lib/utils";
+import {
+  getStatusColor,
+  formatDateTimeLocal,
+  formatTimeFromLocal,
+} from "@/lib/utils";
 
 interface JobCardProps {
   job: Job;
@@ -77,8 +81,16 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               <div className="flex items-center text-sm text-gray-600">
                 <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                 <span className="truncate">
-                  {new Date(job.scheduled_start).toLocaleDateString()} at{" "}
-                  {new Date(job.scheduled_start).toLocaleTimeString()}
+                  {formatDateTimeLocal(job.scheduled_start)}
+                </span>
+              </div>
+            )}
+
+            {job.scheduled_end && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="truncate">
+                  Ends: {formatTimeFromLocal(job.scheduled_end)}
                 </span>
               </div>
             )}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { ChevronLeft, ChevronRight, X, User, Car } from "lucide-react";
 import { toast } from "react-toastify";
 import type { Job } from "../../types";
+import { formatTimeFromLocal, formatDateShort, formatDateTimeLocal } from "@/lib/utils";
 
 export const JobCalendar: React.FC = () => {
   const { jobs, updateJob } = useJobs();
@@ -71,13 +72,6 @@ export const JobCalendar: React.FC = () => {
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const handleDateClick = (date: Date) => {
@@ -215,29 +209,32 @@ export const JobCalendar: React.FC = () => {
 
                 {/* Jobs for this day */}
                 <div className="space-y-1">
-                  {jobsForDay.slice(0, 3).map((job) => (
-                    <div
-                      key={job.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleJobClick(job);
-                      }}
-                      className={`
-                        p-1 rounded text-xs cursor-pointer border
-                        ${getStatusColor(job.status)}
-                        hover:opacity-80 transition-opacity
-                      `}
-                    >
-                      <div className="font-medium truncate">
-                        {job.service_type}
-                      </div>
-                      {job.scheduled_start && (
-                        <div className="text-xs opacity-75">
-                          {formatTime(job.scheduled_start)}
+                  {jobsForDay.slice(0, 3).map((job) => {
+                    
+                    return (
+                      <div
+                        key={job.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleJobClick(job);
+                        }}
+                        className={`
+                          p-1 rounded text-xs cursor-pointer border
+                          ${getStatusColor(job.status)}
+                          hover:opacity-80 transition-opacity
+                        `}
+                      >
+                        <div className="font-medium truncate">
+                          {job.service_type}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        {job.scheduled_start && (
+                          <div className="text-xs opacity-75">
+                            {formatTimeFromLocal(job.scheduled_start)}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
 
                   {jobsForDay.length > 3 && (
                     <div className="text-xs text-gray-500 text-center">
@@ -296,13 +293,13 @@ export const JobCalendar: React.FC = () => {
                     {selectedJob.scheduled_start && (
                       <p className="text-gray-700">
                         <strong>Start:</strong>{" "}
-                        {new Date(selectedJob.scheduled_start).toLocaleString()}
+                        {formatDateTimeLocal(selectedJob.scheduled_start)}
                       </p>
                     )}
                     {selectedJob.scheduled_end && (
                       <p className="text-gray-700">
                         <strong>End:</strong>{" "}
-                        {new Date(selectedJob.scheduled_end).toLocaleString()}
+                        {formatDateTimeLocal(selectedJob.scheduled_end)}
                       </p>
                     )}
                   </div>

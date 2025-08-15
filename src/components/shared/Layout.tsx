@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Navigation } from "./Navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginForm } from "@/components/auth/LoginForm";
@@ -16,6 +16,16 @@ export const Layout: React.FC<LayoutProps> = ({
   setActiveTab,
 }) => {
   const { profile, loading } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    // Trigger a custom refresh event that components can listen to
+    window.dispatchEvent(new CustomEvent("refresh-dashboard-data"));
+    
+    // Reset refreshing state after a short delay
+    setTimeout(() => setRefreshing(false), 1000);
+  };
 
   // Enhanced loading state with better accessibility
   if (loading) {
@@ -143,14 +153,12 @@ export const Layout: React.FC<LayoutProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                // Trigger a custom refresh event that components can listen to
-                window.dispatchEvent(new CustomEvent("refresh-dashboard-data"));
-              }}
+              onClick={handleRefresh}
+              disabled={refreshing}
               className="flex items-center gap-2"
             >
               <svg
-                className="h-4 w-4"
+                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -162,7 +170,7 @@ export const Layout: React.FC<LayoutProps> = ({
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              Refresh Data
+              {refreshing ? "Refreshing..." : "Refresh Data"}
             </Button>
           </div>
 
