@@ -327,6 +327,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
+      {/* Open Job Pool Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900 flex items-center">
+            <Wrench className="h-5 w-5 mr-2 text-orange-500" />
+            Open Job Pool
+          </h2>
+          <span className="bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
+            {jobs.filter(job => job.status === 'pending' && !job.technician_id).length} jobs
+          </span>
+        </div>
+        
+        <div className="space-y-3 max-h-48 overflow-y-auto">
+          {jobs.filter(job => job.status === 'pending' && !job.technician_id).length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm">No open jobs in pool</p>
+            </div>
+          ) : (
+            jobs
+              .filter(job => job.status === 'pending' && !job.technician_id)
+              .slice(0, 5)
+              .map((job) => (
+                <div
+                  key={job.id}
+                  className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
+                  onClick={() => handleViewAllJobs()}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium text-orange-800 text-sm">
+                          {job.service_type}
+                        </p>
+                        <p className="text-orange-600 text-xs">
+                          {job.customer?.name} - {job.vehicle?.make} {job.vehicle?.model}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-orange-600">
+                      {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'N/A'}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-1 text-xs border-orange-300 text-orange-700 hover:bg-orange-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewAllJobs();
+                      }}
+                    >
+                      Schedule
+                    </Button>
+                  </div>
+                </div>
+              ))
+          )}
+        </div>
+        
+        {jobs.filter(job => job.status === 'pending' && !job.technician_id).length > 5 && (
+          <div className="mt-4 text-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewAllJobs}
+              className="text-orange-600 border-orange-300 hover:bg-orange-50"
+            >
+              View All Open Jobs ({jobs.filter(job => job.status === 'pending' && !job.technician_id).length})
+            </Button>
+          </div>
+        )}
+      </div>
+
       {/* Integrated Calendar View */}
       {showCalendar && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import type { Customer } from "../../types";
+import type { Customer, Vehicle } from "../../types";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { CustomerSearch } from "./CustomerSearch";
 import {
   Plus,
   Search,
@@ -12,11 +13,16 @@ import {
   Mail,
   Phone,
   MessageCircle,
+  Car,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+interface CustomerWithVehicles extends Customer {
+  vehicles: Vehicle[];
+}
+
 export const CustomerList: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [customers, setCustomers] = useState<CustomerWithVehicles[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -36,13 +42,29 @@ export const CustomerList: React.FC = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch customers with their vehicles
+      const { data: customersData, error: customersError } = await supabase
         .from("customers")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      setCustomers(data || []);
+      if (customersError) throw customersError;
+
+      // Fetch all vehicles
+      const { data: vehiclesData, error: vehiclesError } = await supabase
+        .from("vehicles")
+        .select("*");
+
+      if (vehiclesError) throw vehiclesError;
+
+      // Combine customers with their vehicles
+      const customersWithVehicles = customersData?.map(customer => ({
+        ...customer,
+        vehicles: vehiclesData?.filter(vehicle => vehicle.customer_id === customer.id) || []
+      })) || [];
+
+      setCustomers(customersWithVehicles);
     } catch {
       toast.error("Failed to fetch customers");
     } finally {
@@ -114,11 +136,21 @@ export const CustomerList: React.FC = () => {
     });
   };
 
+  const handleCustomerSelect = (customer: Customer, _vehicle?: Vehicle) => {
+    setSearchTerm(customer.name);
+    // You can add additional logic here if needed
+  };
+
   const filteredCustomers = customers.filter(
     (customer) =>
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.phone?.includes(searchTerm)
+      customer.phone?.includes(searchTerm) ||
+      customer.vehicles.some(vehicle => 
+        vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        vehicle.model.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   if (loading) {
@@ -139,15 +171,25 @@ export const CustomerList: React.FC = () => {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          type="text"
-          placeholder="Search customers..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+      {/* Enhanced Search */}
+      <div className="space-y-4">
+        <CustomerSearch 
+          onCustomerSelect={handleCustomerSelect}
+          placeholder="Search by customer name or license plate..."
+          className="max-w-md"
         />
+        
+        {/* Traditional search as fallback */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Quick search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
 
       {showForm && (
@@ -264,6 +306,29 @@ export const CustomerList: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Vehicle Information */}
+                  {customer.vehicles.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
+                        <Car className="h-4 w-4 mr-2" />
+                        Vehicles ({customer.vehicles.length})
+                      </h4>
+                      <div className="space-y-2">
+                        {customer.vehicles.map((vehicle) => (
+                          <div key={vehicle.id} className="bg-gray-50 rounded-md p-2 text-xs">
+                            <div className="font-medium text-gray-800">
+                              {vehicle.make} {vehicle.model}
+                            </div>
+                            <div className="text-gray-600">
+                              {vehicle.license_plate} • {vehicle.year}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="mt-3">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

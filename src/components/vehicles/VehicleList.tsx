@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import type { Vehicle } from "../../types";
+import type { Vehicle, Customer } from "../../types";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useCustomers } from "@/hooks/useCustomers";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { CustomerSearch } from "../customers/CustomerSearch";
 import {
   Plus,
   Search,
@@ -101,6 +102,14 @@ export const VehicleList: React.FC = () => {
     });
   };
 
+  const handleCustomerSelect = (customer: Customer, vehicle?: Vehicle) => {
+    if (vehicle) {
+      setSearchTerm(vehicle.license_plate);
+    } else {
+      setSearchTerm(customer.name);
+    }
+  };
+
   const filteredVehicles = vehicles.filter(
     (vehicle) =>
       vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -136,15 +145,25 @@ export const VehicleList: React.FC = () => {
         </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          type="text"
-          placeholder="Search vehicles..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+      {/* Enhanced Search */}
+      <div className="space-y-4">
+        <CustomerSearch
+          onCustomerSelect={handleCustomerSelect}
+          placeholder="Search by customer name or license plate..."
+          className="max-w-md"
         />
+
+        {/* Traditional search as fallback */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Quick search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
       </div>
 
       {showForm && (

@@ -3,10 +3,11 @@ import { useJobs } from "@/hooks/useJobs";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useTechnicians } from "@/hooks/useTechnicians";
-import type { Job } from "../../types";
+import type { Job, Customer, Vehicle } from "../../types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { CustomerSearch } from "../customers/CustomerSearch";
 import {
   X,
   User,
@@ -31,6 +32,8 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
   const { vehicles } = useVehicles();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const [formData, setFormData] = useState({
     customer_id: job?.customer_id || "",
@@ -78,6 +81,19 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
 
     setFormData(newFormData);
     setErrors({ ...errors, [field]: "" });
+  };
+
+  const handleCustomerSelect = (customer: Customer, vehicle?: Vehicle) => {
+    setSelectedCustomer(customer);
+    setSelectedVehicle(vehicle || null);
+    
+    setFormData({
+      ...formData,
+      customer_id: customer.id,
+      vehicle_id: vehicle?.id || "",
+    });
+    
+    setErrors({ ...errors, customer_id: "", vehicle_id: "" });
   };
 
   const validateForm = () => {
@@ -186,9 +202,44 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <User className="h-4 w-4 mr-2" />
               Customer & Vehicle Information
             </h4>
+            
+            {/* Enhanced Search */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-blue-900 mb-2">
+                Quick Search
+              </label>
+              <CustomerSearch 
+                onCustomerSelect={handleCustomerSelect}
+                placeholder="Search by customer name or license plate..."
+              />
+            </div>
+
+            {/* Selected Customer & Vehicle Display */}
+            {(selectedCustomer || selectedVehicle) && (
+              <div className="mb-4 p-3 bg-blue-100 rounded-lg border border-blue-300">
+                {selectedCustomer && (
+                  <div className="flex items-center space-x-2 mb-2">
+                    <User className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800">
+                      Customer: {selectedCustomer.name}
+                    </span>
+                  </div>
+                )}
+                {selectedVehicle && (
+                  <div className="flex items-center space-x-2">
+                    <Car className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800">
+                      Vehicle: {selectedVehicle.make} {selectedVehicle.model} ({selectedVehicle.license_plate})
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Traditional Selection as Fallback */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
-                label="Customer"
+                label="Customer (Fallback)"
                 value={formData.customer_id}
                 onChange={(value) => {
                   setFormData({
@@ -209,7 +260,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               />
 
               <Select
-                label="Vehicle"
+                label="Vehicle (Fallback)"
                 value={formData.vehicle_id}
                 onChange={(value) => {
                   setFormData({ ...formData, vehicle_id: value });

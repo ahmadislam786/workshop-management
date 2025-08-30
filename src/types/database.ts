@@ -40,6 +40,7 @@ export interface Database {
           email: string;
           specialization: string | null;
           phone: string | null;
+          job_count: number;
           created_at: string;
           updated_at: string;
         };
@@ -50,6 +51,7 @@ export interface Database {
           email: string;
           specialization?: string | null;
           phone?: string | null;
+          job_count?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -60,6 +62,7 @@ export interface Database {
           email?: string;
           specialization?: string | null;
           phone?: string | null;
+          job_count?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -141,7 +144,6 @@ export interface Database {
           parts_needed: string | null;
           duration_hours: number | null;
           ai_duration_hour: number | null;
-          job_count: number;
           source: "email" | "manual";
           notes: string | null;
           created_at: string;
@@ -164,7 +166,6 @@ export interface Database {
           parts_needed?: string | null;
           duration_hours?: number | null;
           ai_duration_hour?: number | null;
-          job_count?: number;
           source?: "email" | "manual";
           notes?: string | null;
           created_at?: string;
@@ -187,7 +188,6 @@ export interface Database {
           parts_needed?: string | null;
           duration_hours?: number | null;
           ai_duration_hour?: number | null;
-          job_count?: number;
           source?: "email" | "manual";
           notes?: string | null;
           created_at?: string;
