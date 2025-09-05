@@ -80,6 +80,8 @@ export interface Job {
   customer_id: string;
   vehicle_id: string;
   technician_id?: string;
+  team_id?: string;
+  assigned_employee_id?: string;
   service_type: string;
   status: JobStatus;
   time_frame?: string;
@@ -152,4 +154,26 @@ export interface UserCreationResult {
   profileId?: string;
   requiresEmailConfirmation?: boolean;
   error?: string;
+}
+
+// =====================================================
+// SCANS MODULE
+// =====================================================
+
+export interface ScanMeasurement {
+  name: string; // e.g. "Voltage", "Temperature"
+  value: string | number; // keep flexible for units formatting
+  unit?: string; // e.g. "V", "°C"
+  status?: "ok" | "warning" | "error"; // optional traffic-light state
+}
+
+export interface ScanRecord {
+  id: string;
+  created_at: string;
+  device?: string; // scanner source
+  vehicle_id?: string;
+  customer_id?: string;
+  summary?: string; // short description shown in list
+  // If your DB stores JSON results, this maps directly
+  results?: ScanMeasurement[] | Record<string, unknown> | null;
 }

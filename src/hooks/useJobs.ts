@@ -49,6 +49,24 @@ export const useJobs = () => {
     }
   };
 
+  // Subscribe to realtime changes for jobs
+  useEffect(() => {
+    const channel = supabase
+      .channel("jobs-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "jobs" },
+        () => {
+          fetchJobs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   const createJob = async (jobData: Partial<Job>) => {
     try {
       const { data, error } = await supabase

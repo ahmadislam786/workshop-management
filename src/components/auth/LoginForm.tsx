@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { signUp } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Wrench, Eye, EyeOff, Car, Shield, Clock } from "lucide-react";
@@ -10,6 +11,7 @@ export const LoginForm: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<string>("");
   const { signIn } = useAuth();
 
@@ -19,10 +21,12 @@ export const LoginForm: React.FC = () => {
     setError("");
 
     try {
-      const result = await signIn(email, password);
-
-      if (!result.success) {
-        setError(result.error || "Sign in failed");
+      if (mode === "signup") {
+        const { error } = await signUp(email, password);
+        if (error) throw error;
+      } else {
+        const result = await signIn(email, password);
+        if (!result.success) setError(result.error || "Sign in failed");
       }
     } catch (error) {
       setError("An unexpected error occurred");
@@ -55,10 +59,10 @@ export const LoginForm: React.FC = () => {
           <div className="px-8 py-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Welcome Back
+                {mode === "login" ? "Welcome Back" : "Create Account"}
               </h2>
               <p className="text-gray-600">
-                Sign in to access your workshop dashboard
+                {mode === "login" ? "Sign in to access your workshop dashboard" : "Sign up to get started"}
               </p>
             </div>
 
@@ -131,8 +135,14 @@ export const LoginForm: React.FC = () => {
                 loading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? (mode === "login" ? "Signing In..." : "Creating...") : (mode === "login" ? "Sign In" : "Sign Up")}
               </Button>
+
+              <div className="text-center mt-3">
+                <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-xs text-blue-600 underline">
+                  {mode === "login" ? "Create account" : "Have an account? Sign in"}
+                </button>
+              </div>
             </form>
 
             {/* Features Section */}

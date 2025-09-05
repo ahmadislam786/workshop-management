@@ -24,12 +24,14 @@ import {
 
 interface JobCardProps {
   job: Job;
+  mode?: "regular" | "compact" | "detailed";
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
   const { profile } = useAuth();
   const { updateJob } = useJobs();
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleStatusUpdate = (newStatus: Job["status"]) => {
     updateJob(job.id, { status: newStatus });
@@ -45,8 +47,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
   return (
     <>
-      <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-all duration-200 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2">
-        <div className="px-4 py-5 sm:p-6">
+      <div
+        data-job-customer={job.customer_id}
+        data-job-vehicle={job.vehicle_id}
+        className={`bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-all duration-200 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 ${mode==="compact"?"p-2":""}`}
+        onDoubleClick={() => setShowDetails(true)}
+      >
+        <div className={mode==="compact"?"px-3 py-3":"px-4 py-5 sm:p-6"}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900 truncate">
               {job.service_type}
@@ -60,7 +67,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className={`space-y-3 ${mode==="compact"?"text-xs":""}`}>
             {job.customer && (
               <div className="flex items-center text-sm text-gray-600">
                 <User className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -102,7 +109,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               </div>
             )}
 
-            {job.duration_hours && (
+            {mode!=="compact" && job.duration_hours && (
               <div className="flex items-center text-sm text-gray-600">
                 <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                 <span className="truncate">
@@ -111,7 +118,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
               </div>
             )}
 
-            {job.ai_duration_hour && (
+            {mode!=="compact" && job.ai_duration_hour && (
               <div className="flex items-center text-sm text-gray-600">
                 <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
                 <span className="truncate">
@@ -195,6 +202,33 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
 
       {/* Edit Form Modal */}
       {showEditForm && <JobForm job={job} onClose={handleEditClose} />}
+      {showDetails && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setShowDetails(false)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Job Details</h3>
+              <button className="text-gray-500 hover:text-gray-700" onClick={() => setShowDetails(false)}>Close</button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div><span className="font-medium">Service:</span> {job.service_type}</div>
+              <div><span className="font-medium">Status:</span> {job.status}</div>
+              {job.customer && <div><span className="font-medium">Customer:</span> {job.customer.name}</div>}
+              {job.vehicle && <div><span className="font-medium">Vehicle:</span> {job.vehicle.make} {job.vehicle.model}</div>}
+              {job.technician && <div><span className="font-medium">Technician:</span> {job.technician.name}</div>}
+              {job.notes && <div className="whitespace-pre-wrap"><span className="font-medium">Notes:</span> {job.notes}</div>}
+            </div>
+
+            {/* Related highlighting (same customer/vehicle) */}
+            <div className="mt-4">
+              <div className="text-xs text-gray-500 mb-1">Related tasks (same customer/vehicle)</div>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-50 text-blue-700">Customer: {job.customer?.name || "-"}</span>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-50 text-green-700">Vehicle: {job.vehicle ? `${job.vehicle.make} ${job.vehicle.model}` : "-"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

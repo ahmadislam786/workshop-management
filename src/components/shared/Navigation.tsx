@@ -34,6 +34,10 @@ export const Navigation: React.FC<NavigationProps> = ({
     { id: "customers", label: "Customers", icon: Users, description: "Customer management" },
     { id: "technicians", label: "Technicians", icon: User, description: "Team management" },
     { id: "vehicles", label: "Vehicles", icon: Car, description: "Vehicle database" },
+    { id: "scans", label: "Scans", icon: Wrench, description: "Search scans and view results" },
+    { id: "leitstand", label: "Leitstand", icon: LayoutDashboard, description: "Realtime board" },
+    { id: "plantafel", label: "Plantafel", icon: LayoutDashboard, description: "Planning board" },
+    { id: "dialogannahme", label: "Dialogannahme", icon: LayoutDashboard, description: "Damage report" },
   ];
 
   const technicianTabs = [

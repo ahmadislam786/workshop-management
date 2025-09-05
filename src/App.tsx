@@ -9,6 +9,10 @@ import { JobCalendar } from "@/components/jobs/JobCalendar";
 import { CustomerList } from "@/components/customers/CustomerList";
 import { TechnicianList } from "@/components/technicians/TechnicianList";
 import { VehicleList } from "@/components/vehicles/VehicleList";
+import { ScanList } from "@/components/scans/ScanList";
+import { Leitstand } from "@/components/dashboard/Leitstand";
+import { Plantafel } from "@/components/dashboard/Plantafel";
+import { DamageReport } from "@/components/dialogannahme/DamageReport";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -28,6 +32,14 @@ const AppContent: React.FC = () => {
           return <AdminDashboard onNavigate={setActiveTab} />;
         case "jobs":
           return <JobList />;
+        case "scans":
+          return <ScanList />;
+        case "leitstand":
+          return <Leitstand />;
+        case "plantafel":
+          return <Plantafel />;
+        case "dialogannahme":
+          return <DamageReport />;
         case "calendar":
           return <JobCalendar />;
         case "customers":
