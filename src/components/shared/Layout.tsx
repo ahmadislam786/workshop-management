@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Navigation } from "./Navigation";
+import { Sidebar } from "./Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/language-context";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { Button } from "@/components/ui/Button";
 
@@ -16,13 +17,15 @@ export const Layout: React.FC<LayoutProps> = ({
   setActiveTab,
 }) => {
   const { profile, loading } = useAuth();
+  const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
     // Trigger a custom refresh event that components can listen to
     window.dispatchEvent(new CustomEvent("refresh-dashboard-data"));
-    
+
     // Reset refreshing state after a short delay
     setTimeout(() => setRefreshing(false), 1000);
   };
@@ -44,11 +47,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
           {/* Loading text with better accessibility */}
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Loading Workshop Manager
+            {t("app.title")}
           </h2>
-          <p className="text-gray-500 text-sm">
-            Please wait while we prepare your dashboard...
-          </p>
+          <p className="text-gray-500 text-sm">{t("app.signIn")}</p>
 
           {/* Loading progress indicator */}
           <div className="mt-4 w-48 mx-auto bg-gray-200 rounded-full h-2">
@@ -95,20 +96,18 @@ export const Layout: React.FC<LayoutProps> = ({
 
               {/* Enhanced branding text */}
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Workshop Manager
+                {t("app.title")}
               </h1>
-              <p className="text-gray-600 text-lg">
-                Sign in to access your workshop dashboard
-              </p>
+              <p className="text-gray-600 text-lg">{t("app.signIn")}</p>
 
               {/* Additional info for better UX */}
               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-700">
                   <span className="font-medium">
-                    Professional Workshop Management System
+                    {t("app.professionalSystem")}
                   </span>
                   <br />
-                  Manage jobs, customers, technicians, and vehicles efficiently
+                  {t("app.manageDescription")}
                 </p>
               </div>
             </div>
@@ -121,63 +120,86 @@ export const Layout: React.FC<LayoutProps> = ({
     );
   }
 
-  // Enhanced main layout with better accessibility
+  // Enhanced main layout with sidebar
   return (
     <div
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-gray-50 flex"
       role="main"
       aria-label="Workshop Manager Dashboard"
     >
-      {/* Enhanced navigation */}
-      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Sidebar Navigation */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
 
-      {/* Main content area with better spacing and accessibility */}
-      <main className="py-8 animate-fade-in">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Page header for better navigation context */}
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 capitalize">
-                {activeTab === "dashboard" ? "Dashboard Overview" : activeTab}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {activeTab === "dashboard" && "Manage your workshop operations"}
-                {activeTab === "jobs" && "Track and manage workshop jobs"}
-                {activeTab === "customers" && "Manage customer relationships"}
-                {activeTab === "technicians" && "Manage your team"}
-                {activeTab === "vehicles" && "Vehicle database and management"}
-              </p>
+      {/* Main content area */}
+      <div
+        className={`flex-1 transition-all duration-300 ${
+          isSidebarCollapsed
+            ? "ml-0 md:ml-16 lg:ml-16"
+            : "ml-0 md:ml-64 lg:ml-64"
+        }`}
+      >
+        <main className="py-8 animate-fade-in bg-gradient-to-br from-gray-50 to-white min-h-screen">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Page header for better navigation context */}
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                  {activeTab === "dashboard" && t("page.dashboard")}
+                  {activeTab === "leitstand" && t("nav.controlBoard")}
+                  {activeTab === "plantafel" && t("nav.planningBoard")}
+                  {activeTab === "dialogannahme" && t("nav.damageReport")}
+                  {![
+                    "dashboard",
+                    "leitstand",
+                    "plantafel",
+                    "dialogannahme",
+                  ].includes(activeTab) && t(`nav.${activeTab}`)}
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {activeTab === "leitstand" && t("page.controlBoard.desc")}
+                  {activeTab === "plantafel" && t("page.planningBoard.desc")}
+                  {activeTab === "dialogannahme" && t("page.damageReport.desc")}
+                  {!["leitstand", "plantafel", "dialogannahme"].includes(
+                    activeTab
+                  ) && t(`page.${activeTab}.desc`)}
+                </p>
+              </div>
+
+              {/* Refresh button for manual data refresh */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-2"
+              >
+                <svg
+                  className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                {refreshing ? t("action.refreshing") : t("action.refresh")}
+              </Button>
             </div>
 
-            {/* Refresh button for manual data refresh */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2"
-            >
-              <svg
-                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              {refreshing ? "Refreshing..." : "Refresh Data"}
-            </Button>
+            {/* Main content */}
+            <div className="animate-slide-up">{children}</div>
           </div>
-
-          {/* Main content */}
-          <div className="animate-slide-up">{children}</div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

@@ -124,6 +124,48 @@ a:focus-visible {
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
 @keyframes slide-up {
   from {
     opacity: 0;
@@ -175,6 +217,14 @@ a:focus-visible {
   animation: slide-up 0.4s ease-out;
 }
 
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.3s ease-out;
+}
+
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
 }
@@ -185,6 +235,10 @@ a:focus-visible {
 
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Enhanced hover effects with better accessibility */
@@ -448,10 +502,199 @@ a:focus-visible {
   }
 }
 
+/* Sidebar-specific animations and styles */
+@keyframes sidebar-slide-in {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sidebar-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes content-shift {
+  from {
+    margin-left: 0;
+  }
+  to {
+    margin-left: 16rem; /* 256px */
+  }
+}
+
+@keyframes content-shift-collapsed {
+  from {
+    margin-left: 16rem;
+  }
+  to {
+    margin-left: 4rem; /* 64px */
+  }
+}
+
+.animate-sidebar-in {
+  animation: sidebar-slide-in 0.3s ease-out;
+}
+
+.animate-sidebar-out {
+  animation: sidebar-slide-out 0.3s ease-out;
+}
+
+.animate-content-shift {
+  animation: content-shift 0.3s ease-out;
+}
+
+.animate-content-shift-collapsed {
+  animation: content-shift-collapsed 0.3s ease-out;
+}
+
+/* Enhanced sidebar hover effects */
+.sidebar-item-hover {
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-item-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.sidebar-item-hover:hover::before {
+  left: 100%;
+}
+
+.sidebar-item-hover:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile sidebar overlay */
+.sidebar-overlay {
+  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Enhanced mobile responsiveness for sidebar */
+@media (max-width: 1024px) {
+  .sidebar-mobile {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-mobile.open {
+    transform: translateX(0);
+  }
+  
+  .main-content-mobile {
+    margin-left: 0 !important;
+  }
+}
+
+/* Tablet specific adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar-tablet {
+    width: 4rem; /* Collapsed by default on tablet */
+  }
+  
+  .sidebar-tablet.expanded {
+    width: 16rem;
+  }
+  
+  .main-content-tablet {
+    margin-left: 4rem;
+  }
+  
+  .main-content-tablet.expanded {
+    margin-left: 16rem;
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 767px) {
+  .sidebar-mobile {
+    width: 20rem; /* 320px - wider for better touch interaction */
+  }
+  
+  .main-content-mobile {
+    margin-left: 0 !important;
+  }
+  
+  .mobile-menu-button {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 60;
+  }
+}
+
+/* Sidebar collapse animation */
+.sidebar-collapse {
+  transition: width 0.3s ease-in-out;
+}
+
+.sidebar-collapse.collapsed {
+  width: 4rem;
+}
+
+.sidebar-collapse.expanded {
+  width: 16rem;
+}
+
+/* Enhanced focus states for sidebar items */
+.sidebar-item:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.15);
+}
+
+/* Sidebar scrollbar styling */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
 /* Print styles for better accessibility */
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
   }
 
   * {

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useJobs } from "@/hooks/useJobs";
+import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import {
   Eye,
@@ -15,6 +16,7 @@ import { formatTimeFromLocal, formatDateShort } from "@/lib/utils";
 export const TechnicianDashboard: React.FC = () => {
   const { technician } = useAuth();
   const { jobs, updateJob } = useJobs();
+  const { t } = useLanguage();
   const [updatingJob, setUpdatingJob] = useState<string | null>(null);
   const [showCompletedJobs, setShowCompletedJobs] = useState(false);
 
@@ -124,19 +126,23 @@ export const TechnicianDashboard: React.FC = () => {
       {/* Welcome Banner */}
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 via-green-700 to-green-800 rounded-2xl p-8 text-white">
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold mb-3">Welcome back!</h1>
+          <h1 className="text-3xl font-bold mb-3">
+            {t("dashboard.welcomeBack")}
+          </h1>
           <p className="text-green-100 text-lg max-w-2xl">
-            Here's what you need to work on today. Keep up the great work!
+            {t("dashboard.workToday")}
           </p>
           <div className="mt-6 flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-green-100">Active Technician</span>
+              <span className="text-green-100">
+                {t("dashboard.activeTechnician")}
+              </span>
             </div>
             <div className="flex items-center space-x-2">
               {/* Wrench icon removed as per new_code */}
               <span className="text-green-100">
-                {stats.totalJobs} Jobs Assigned
+                {stats.totalJobs} {t("dashboard.jobsAssigned")}
               </span>
             </div>
           </div>

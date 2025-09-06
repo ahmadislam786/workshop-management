@@ -65,7 +65,12 @@ export interface Technician {
 /**
  * Job status types
  */
-export type JobStatus = "pending" | "scheduled" | "in_progress" | "completed" | "cancelled";
+export type JobStatus =
+  | "pending"
+  | "scheduled"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
 /**
  * Job source types
@@ -170,10 +175,36 @@ export interface ScanMeasurement {
 export interface ScanRecord {
   id: string;
   created_at: string;
-  device?: string; // scanner source
-  vehicle_id?: string;
-  customer_id?: string;
+  device: string; // scanner source
+  vehicle_id: string;
+  customer_id: string;
+  technician_id?: string;
+  scan_type: string;
   summary?: string; // short description shown in list
-  // If your DB stores JSON results, this maps directly
   results?: ScanMeasurement[] | Record<string, unknown> | null;
+  status: "pending" | "completed" | "failed" | "cancelled";
+  updated_at: string;
+  // Related data (populated by joins)
+  vehicle?: Vehicle;
+  customer?: Customer;
+  technician?: Technician;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface DamageReport {
+  id: string;
+  job_id: string;
+  comment?: string;
+  photo_url?: string;
+  created_at: string;
+  // Related data
+  job?: Job;
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useJobs } from "@/hooks/useJobs";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useTechnicians } from "@/hooks/useTechnicians";
+import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { StatsCards } from "./StatsCards";
 import { UserManagement } from "@/components/admin/UserManagement";
@@ -32,6 +33,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { jobs, loading: jobsLoading } = useJobs();
   const { customers } = useCustomers();
   const { technicians } = useTechnicians();
+  const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -199,14 +201,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">
-              Welcome to Autohaus Denker & Brünen
+              {t("dashboard.welcome")}
             </h1>
             <p className="text-blue-100 text-base md:text-lg">
-              Professional Workshop Management System
+              {t("dashboard.professionalSystem")}
             </p>
             <p className="text-blue-100 mt-2 text-sm md:text-base">
-              Manage your workshop operations, track jobs, and coordinate with
-              your team efficiently.
+              {t("dashboard.manageOperations")}
             </p>
           </div>
         </div>
@@ -214,13 +215,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 bg-green-400 rounded-full"></div>
             <span className="text-blue-100 text-sm md:text-base">
-              System Online
+              {t("dashboard.systemOnline")}
             </span>
           </div>
           <div className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
             <span className="text-blue-100 text-sm md:text-base">
-              {activeJobs} Jobs Active
+              {activeJobs} {t("dashboard.jobsActive")}
             </span>
           </div>
         </div>
@@ -335,19 +336,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             Open Job Pool
           </h2>
           <span className="bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
-            {jobs.filter(job => job.status === 'pending' && !job.technician_id).length} jobs
+            {
+              jobs.filter(
+                (job) => job.status === "pending" && !job.technician_id
+              ).length
+            }{" "}
+            jobs
           </span>
         </div>
-        
+
         <div className="space-y-3 max-h-48 overflow-y-auto">
-          {jobs.filter(job => job.status === 'pending' && !job.technician_id).length === 0 ? (
+          {jobs.filter((job) => job.status === "pending" && !job.technician_id)
+            .length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">No open jobs in pool</p>
             </div>
           ) : (
             jobs
-              .filter(job => job.status === 'pending' && !job.technician_id)
+              .filter((job) => job.status === "pending" && !job.technician_id)
               .slice(0, 5)
               .map((job) => (
                 <div
@@ -363,14 +370,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           {job.service_type}
                         </p>
                         <p className="text-orange-600 text-xs">
-                          {job.customer?.name} - {job.vehicle?.make} {job.vehicle?.model}
+                          {job.customer?.name} - {job.vehicle?.make}{" "}
+                          {job.vehicle?.model}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-orange-600">
-                      {job.created_at ? new Date(job.created_at).toLocaleDateString() : 'N/A'}
+                      {job.created_at
+                        ? new Date(job.created_at).toLocaleDateString()
+                        : "N/A"}
                     </p>
                     <Button
                       size="sm"
@@ -388,8 +398,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               ))
           )}
         </div>
-        
-        {jobs.filter(job => job.status === 'pending' && !job.technician_id).length > 5 && (
+
+        {jobs.filter((job) => job.status === "pending" && !job.technician_id)
+          .length > 5 && (
           <div className="mt-4 text-center">
             <Button
               variant="outline"
@@ -397,7 +408,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={handleViewAllJobs}
               className="text-orange-600 border-orange-300 hover:bg-orange-50"
             >
-              View All Open Jobs ({jobs.filter(job => job.status === 'pending' && !job.technician_id).length})
+              View All Open Jobs (
+              {
+                jobs.filter(
+                  (job) => job.status === "pending" && !job.technician_id
+                ).length
+              }
+              )
             </Button>
           </div>
         )}

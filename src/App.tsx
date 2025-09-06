@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { AuthProvider } from "@/contexts/auth-context";
+import { LanguageProvider } from "@/contexts/language-context";
+import { NotificationProvider } from "@/contexts/notification-context";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useAuth } from "@/hooks/useAuth";
 import { Layout } from "@/components/shared/Layout";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
@@ -73,20 +76,26 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </AuthProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <AppContent />
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+          </NotificationProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   );
 };
 

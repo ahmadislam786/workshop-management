@@ -14,7 +14,10 @@ export const useScans = () => {
       setError(null);
 
       // Optional: verify table exists
-      const { error: tableError } = await supabase.from("scans").select("id").limit(1);
+      const { error: tableError } = await supabase
+        .from("scans")
+        .select("id")
+        .limit(1);
       if (tableError) {
         setError(`Table access failed: ${tableError.message}`);
         return;
@@ -22,7 +25,14 @@ export const useScans = () => {
 
       const { data, error } = await supabase
         .from("scans")
-        .select("*")
+        .select(
+          `
+          *,
+          vehicle:vehicles(*),
+          customer:customers(*),
+          technician:technicians(*)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -41,10 +51,9 @@ export const useScans = () => {
 
     const handleRefresh = () => fetchScans();
     window.addEventListener("refresh-dashboard-data", handleRefresh);
-    return () => window.removeEventListener("refresh-dashboard-data", handleRefresh);
+    return () =>
+      window.removeEventListener("refresh-dashboard-data", handleRefresh);
   }, []);
 
   return { scans, loading, error, refetch: fetchScans };
 };
-
-

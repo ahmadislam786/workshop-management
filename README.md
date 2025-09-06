@@ -46,38 +46,43 @@ workshop_manag/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Supabase account
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd workshop_manag
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Configure Supabase**
+
    - Copy `config.example.js` to `config.js`
    - Update with your Supabase credentials:
      ```javascript
      export default {
        supabaseUrl: "YOUR_SUPABASE_URL",
-       anonKey: "YOUR_SUPABASE_ANON_KEY"
-     }
+       anonKey: "YOUR_SUPABASE_ANON_KEY",
+     };
      ```
 
 4. **Set up database**
+
    - Run the SQL schema in your Supabase SQL editor
    - Ensure RLS policies are properly configured
 
 5. **Start development server**
+
    ```bash
    npm run dev
    ```
@@ -88,6 +93,7 @@ workshop_manag/
 ## 🗄️ Database Schema
 
 The application uses the following tables:
+
 - `profile` - User roles and authentication
 - `technicians` - Technician information
 - `customers` - Customer details
@@ -129,6 +135,7 @@ The application uses the following tables:
 ### Environment Variables
 
 Create a `.env.local` file for local development:
+
 ```env
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -143,11 +150,13 @@ The project uses Tailwind CSS v3 with custom configuration in `tailwind.config.j
 ### Common Issues
 
 1. **Authentication not working**
+
    - Check Supabase configuration in `config.js`
    - Verify RLS policies are correctly set
    - Check browser console for errors
 
 2. **Data not loading**
+
    - Verify database connection
    - Check RLS policies
    - Ensure proper user roles
@@ -172,6 +181,7 @@ This project is licensed under the MIT License.
 ## 🆘 Support
 
 For support and questions:
+
 - Check the troubleshooting section
 - Review Supabase documentation
 - Open an issue on GitHub

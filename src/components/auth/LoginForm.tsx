@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { signUp } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Wrench, Eye, EyeOff, Car, Shield, Clock } from "lucide-react";
-import { Mail, Lock } from "lucide-react";
+import { Wrench, Eye, EyeOff, Car, Shield, Clock, Mail, Lock } from "lucide-react";
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [error, setError] = useState<string>("");
   const { signIn } = useAuth();
 
@@ -21,13 +18,8 @@ export const LoginForm: React.FC = () => {
     setError("");
 
     try {
-      if (mode === "signup") {
-        const { error } = await signUp(email, password);
-        if (error) throw error;
-      } else {
-        const result = await signIn(email, password);
-        if (!result.success) setError(result.error || "Sign in failed");
-      }
+      const result = await signIn(email, password);
+      if (!result.success) setError(result.error || "Sign in failed");
     } catch (error) {
       setError("An unexpected error occurred");
     } finally {
@@ -59,10 +51,10 @@ export const LoginForm: React.FC = () => {
           <div className="px-8 py-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {mode === "login" ? "Welcome Back" : "Create Account"}
+                Welcome Back
               </h2>
               <p className="text-gray-600">
-                {mode === "login" ? "Sign in to access your workshop dashboard" : "Sign up to get started"}
+                Sign in to access your workshop dashboard
               </p>
             </div>
 
@@ -135,14 +127,8 @@ export const LoginForm: React.FC = () => {
                 loading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? (mode === "login" ? "Signing In..." : "Creating...") : (mode === "login" ? "Sign In" : "Sign Up")}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
-
-              <div className="text-center mt-3">
-                <button type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")} className="text-xs text-blue-600 underline">
-                  {mode === "login" ? "Create account" : "Have an account? Sign in"}
-                </button>
-              </div>
             </form>
 
             {/* Features Section */}

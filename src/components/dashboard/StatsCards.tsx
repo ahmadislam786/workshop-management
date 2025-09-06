@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useLanguage } from "@/contexts/language-context";
 import {
   Wrench,
   Users,
@@ -19,63 +20,65 @@ interface StatsCardsProps {
   };
 }
 
-export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
-  const cards = [
+export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
+  const { t } = useLanguage();
+  
+  const cards = useMemo(() => [
     {
-      title: "Total Jobs",
+      title: t("stats.totalJobs"),
       value: stats.totalJobs,
       icon: Wrench,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
       gradient: "from-blue-500 to-blue-600",
-      description: "All time jobs",
+      description: t("stats.allTimeJobs"),
     },
     {
-      title: "Active Customers",
+      title: t("stats.activeCustomers"),
       value: stats.activeCustomers,
       icon: Users,
       color: "text-green-600",
       bgColor: "bg-green-100",
       gradient: "from-green-500 to-green-600",
-      description: "Engaged customers",
+      description: t("stats.engagedCustomers"),
     },
     {
-      title: "Technicians",
+      title: t("stats.technicians"),
       value: stats.totalTechnicians,
       icon: User,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
       gradient: "from-purple-500 to-purple-600",
-      description: "Team members",
+      description: t("stats.teamMembers"),
     },
     {
-      title: "Pending Jobs",
+      title: t("stats.pendingJobs"),
       value: stats.pendingJobs,
       icon: Clock,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
       gradient: "from-orange-500 to-orange-600",
-      description: "Awaiting start",
+      description: t("stats.awaitingStart"),
     },
     {
-      title: "In Progress",
+      title: t("stats.inProgress"),
       value: stats.inProgressJobs,
       icon: AlertCircle,
       color: "text-yellow-600",
       bgColor: "bg-yellow-100",
       gradient: "from-yellow-500 to-yellow-600",
-      description: "Currently working",
+      description: t("stats.currentlyWorking"),
     },
     {
-      title: "Completed",
+      title: t("stats.completed"),
       value: stats.completedJobs,
       icon: CheckCircle,
       color: "text-emerald-600",
       bgColor: "bg-emerald-100",
       gradient: "from-emerald-500 to-emerald-600",
-      description: "Successfully finished",
+      description: t("stats.successfullyFinished"),
     },
-  ];
+  ], [t, stats]);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -111,7 +114,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
                     aria-hidden="true"
                   />
                   <span className="text-xs text-gray-500 font-medium">
-                    {card.value > 0 ? "Active" : "None"}
+                    {card.value > 0 ? t("stats.active") : t("stats.none")}
                   </span>
                 </div>
               </div>
@@ -138,4 +141,4 @@ export const StatsCards: React.FC<StatsCardsProps> = ({ stats }) => {
       })}
     </div>
   );
-};
+});
