@@ -177,18 +177,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    t("calendar.january"),
+    t("calendar.february"),
+    t("calendar.march"),
+    t("calendar.april"),
+    t("calendar.may"),
+    t("calendar.june"),
+    t("calendar.july"),
+    t("calendar.august"),
+    t("calendar.september"),
+    t("calendar.october"),
+    t("calendar.november"),
+    t("calendar.december"),
   ];
 
   return (
@@ -242,10 +242,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                {showCalendar ? "Hide Calendar" : "Show Calendar"}
+                {showCalendar
+                  ? t("dashboard.hideCalendar")
+                  : t("dashboard.showCalendar")}
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Schedule and manage appointments
+                {t("dashboard.scheduleManage")}
               </p>
             </div>
           </div>
@@ -261,10 +263,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                Customer Management
+                {t("dashboard.customerManagement")}
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Manage customer relationships
+                {t("dashboard.manageRelationships")}
               </p>
             </div>
           </div>
@@ -280,10 +282,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                Team Management
+                {t("dashboard.teamManagement")}
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Manage technicians and staff
+                {t("dashboard.manageStaff")}
               </p>
             </div>
           </div>
@@ -299,10 +301,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                Password Management
+                {t("dashboard.passwordManagement")}
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Change user passwords
+                {t("dashboard.changePasswords")}
               </p>
             </div>
           </div>
@@ -318,10 +320,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
-                User Management
+                {t("dashboard.userManagement")}
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Create and manage user accounts
+                {t("dashboard.createManageAccounts")}
               </p>
             </div>
           </div>
@@ -333,7 +335,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 flex items-center">
             <Wrench className="h-5 w-5 mr-2 text-orange-500" />
-            Open Job Pool
+            {t("dashboard.openJobPool")}
           </h2>
           <span className="bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
             {
@@ -341,7 +343,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 (job) => job.status === "pending" && !job.technician_id
               ).length
             }{" "}
-            jobs
+            {t("dashboard.jobs")}
           </span>
         </div>
 
@@ -350,7 +352,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             .length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-              <p className="text-sm">No open jobs in pool</p>
+              <p className="text-sm">{t("dashboard.noOpenJobs")}</p>
             </div>
           ) : (
             jobs
@@ -391,7 +393,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         handleViewAllJobs();
                       }}
                     >
-                      Schedule
+                      {t("job.schedule")}
                     </Button>
                   </div>
                 </div>
@@ -408,7 +410,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={handleViewAllJobs}
               className="text-orange-600 border-orange-300 hover:bg-orange-50"
             >
-              View All Open Jobs (
+              {t("job.viewAllOpenJobs")} (
               {
                 jobs.filter(
                   (job) => job.status === "pending" && !job.technician_id
@@ -425,7 +427,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900">
-              Workshop Calendar
+              {t("dashboard.workshopCalendar")}
             </h2>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -452,7 +454,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1">
             {/* Day Headers */}
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            {[
+              t("calendar.sunday"),
+              t("calendar.monday"),
+              t("calendar.tuesday"),
+              t("calendar.wednesday"),
+              t("calendar.thursday"),
+              t("calendar.friday"),
+              t("calendar.saturday"),
+            ].map((day) => (
               <div
                 key={day}
                 className="p-2 text-center text-sm font-medium text-gray-500"
@@ -519,15 +529,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Recent Jobs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Recent Jobs</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {t("dashboard.recentJobs")}
+          </h2>
           <div className="flex space-x-3">
             <Button variant="outline" size="sm" onClick={handleViewAllJobs}>
               <Eye className="h-4 w-4 mr-2" />
-              View All
+              {t("dashboard.viewAll")}
             </Button>
             <Button variant="outline" size="sm" onClick={handleViewAllJobs}>
               <Plus className="h-4 w-4 mr-2" />
-              New Job
+              {t("dashboard.newJob")}
             </Button>
           </div>
         </div>
@@ -535,7 +547,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {jobsLoading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading jobs...</p>
+            <p className="text-gray-500">{t("dashboard.loadingJobs")}</p>
           </div>
         ) : jobs && jobs.length > 0 ? (
           <div className="space-y-4">
@@ -554,7 +566,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       {job.service_type}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Status: {job.status}
+                      {t("job.status")}: {t(`status.${job.status}`)}
                     </p>
                   </div>
                 </div>
@@ -562,7 +574,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p className="text-sm text-gray-500">
                     {job.scheduled_start
                       ? formatDateTimeLocal(job.scheduled_start)
-                      : "No date"}
+                      : t("job.noDate")}
                   </p>
                   <div className="flex space-x-2 mt-2">
                     <Button
@@ -593,7 +605,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ) : (
           <div className="text-center py-8">
             <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No jobs found</p>
+            <p className="text-gray-500">{t("dashboard.noJobsFound")}</p>
             <Button
               variant="outline"
               size="sm"
@@ -601,7 +613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={handleViewAllJobs}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create First Job
+              {t("dashboard.createFirstJob")}
             </Button>
           </div>
         )}
@@ -612,7 +624,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm">Total Revenue</p>
+              <p className="text-green-100 text-sm">
+                {t("dashboard.totalRevenue")}
+              </p>
               <p className="text-2xl font-bold">
                 €{totalRevenue.toLocaleString()}
               </p>
@@ -626,7 +640,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm">Customer Satisfaction</p>
+              <p className="text-purple-100 text-sm">
+                {t("dashboard.customerSatisfaction")}
+              </p>
               <p className="text-2xl font-bold">{customerSatisfaction}</p>
             </div>
             <div className="bg-white/20 p-3 rounded-full">
@@ -638,7 +654,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-100 text-sm">Efficiency Rate</p>
+              <p className="text-orange-100 text-sm">
+                {t("dashboard.efficiencyRate")}
+              </p>
               <p className="text-2xl font-bold">{efficiencyRate}%</p>
             </div>
             <div className="bg-white/20 p-3 rounded-full">
@@ -660,7 +678,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900">
-                      Job Details
+                      {t("job.details")}
                     </h3>
                     <p className="text-sm text-gray-500">
                       {selectedDate?.toLocaleDateString()}
@@ -680,25 +698,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Service Type
+                    {t("job.serviceType")}
                   </label>
                   <p className="text-gray-900">{selectedJob.service_type}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Status
+                    {t("job.status")}
                   </label>
                   <span
                     className={`px-2 py-1 text-xs font-medium rounded-full border ${getStatusColor(
                       selectedJob.status
                     )}`}
                   >
-                    {selectedJob.status.replace("_", " ")}
+                    {t(`status.${selectedJob.status}`)}
                   </span>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Customer
+                    {t("job.customer")}
                   </label>
                   <p className="text-gray-900">
                     {selectedJob.customer?.name || "N/A"}
@@ -706,7 +724,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Vehicle
+                    {t("job.vehicle")}
                   </label>
                   <p className="text-gray-900">
                     {selectedJob.vehicle
@@ -716,46 +734,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Technician
+                    {t("job.technician")}
                   </label>
                   <p className="text-gray-900">
-                    {selectedJob.technician?.name || "Unassigned"}
+                    {selectedJob.technician?.name || t("job.unassigned")}
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Scheduled Time
+                    {t("job.scheduledTime")}
                   </label>
                   <p className="text-gray-900">
                     {selectedJob.scheduled_start
                       ? formatTime(selectedJob.scheduled_start)
-                      : "Not scheduled"}
+                      : t("job.notScheduled")}
                   </p>
                 </div>
                 {selectedJob.duration_hours && (
                   <div>
                     <label className="text-sm font-medium text-gray-700">
-                      Duration (hours)
+                      {t("job.duration")}
                     </label>
                     <p className="text-gray-900">
-                      {selectedJob.duration_hours} hours
+                      {selectedJob.duration_hours} {t("job.hours")}
                     </p>
                   </div>
                 )}
                 {selectedJob.ai_duration_hour && (
                   <div>
                     <label className="text-sm font-medium text-gray-700">
-                      AI Duration (hours)
+                      {t("job.aiDuration")}
                     </label>
                     <p className="text-gray-900">
-                      {selectedJob.ai_duration_hour} hours
+                      {selectedJob.ai_duration_hour} {t("job.hours")}
                     </p>
                   </div>
                 )}
 
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Source
+                    {t("job.source")}
                   </label>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -765,8 +783,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     }`}
                   >
                     {selectedJob.source === "email"
-                      ? "📧 Email Automation"
-                      : "✋ Manual Entry"}
+                      ? t("job.emailAutomation")
+                      : t("job.manualEntry")}
                   </span>
                 </div>
               </div>
@@ -774,7 +792,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {selectedJob.notes && (
                 <div>
                   <label className="text-sm font-medium text-gray-700">
-                    Notes
+                    {t("job.notes")}
                   </label>
                   <p className="text-gray-900">{selectedJob.notes}</p>
                 </div>
@@ -785,7 +803,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   variant="outline"
                   onClick={() => setShowJobModal(false)}
                 >
-                  Close
+                  {t("job.close")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -793,7 +811,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     handleViewAllJobs();
                   }}
                 >
-                  View Full Details
+                  {t("job.viewFullDetails")}
                 </Button>
               </div>
             </div>

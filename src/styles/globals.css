@@ -351,6 +351,23 @@ a:focus-visible {
   .mobile-spacing {
     gap: 1rem;
   }
+
+  /* Improve mobile layout spacing */
+  .main-content {
+    padding-top: 5rem; /* Space for mobile menu button */
+  }
+
+  /* Better mobile grid layouts */
+  .mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Mobile-friendly cards */
+  .mobile-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -635,6 +652,7 @@ a:focus-visible {
   
   .main-content-mobile {
     margin-left: 0 !important;
+    padding-top: 4rem; /* Add top padding for mobile menu button */
   }
   
   .mobile-menu-button {
@@ -642,6 +660,24 @@ a:focus-visible {
     top: 1rem;
     left: 1rem;
     z-index: 60;
+  }
+
+  /* Improve mobile touch targets */
+  .sidebar-item {
+    min-height: 3rem;
+    padding: 0.75rem;
+  }
+
+  /* Better mobile spacing */
+  .mobile-spacing {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* Mobile-friendly text sizes */
+  .mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
   }
 }
 

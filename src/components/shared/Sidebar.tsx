@@ -50,11 +50,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       if (width < 768) {
         setScreenSize("mobile");
         setIsCollapsed(false); // Always expanded on mobile
+        setIsMobileMenuOpen(false); // Close mobile menu on resize
       } else if (width < 1024) {
         setScreenSize("tablet");
         setIsCollapsed(true); // Collapsed by default on tablet
+        setIsMobileMenuOpen(false); // Close mobile menu on resize
       } else {
         setScreenSize("desktop");
+        setIsMobileMenuOpen(false); // Close mobile menu on resize
       }
     };
 
@@ -183,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         variant="ghost"
         size="sm"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border"
+        className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border border-gray-200 hover:bg-gray-50"
         aria-label={
           isMobileMenuOpen ? t("action.closeMenu") : t("action.openMenu")
         }
@@ -207,7 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`
           fixed top-0 left-0 h-full bg-gradient-to-b from-white to-gray-50 border-r border-gray-200 shadow-xl z-50
-          sidebar-collapse sidebar-scroll
+          sidebar-collapse sidebar-scroll transition-all duration-300 ease-in-out
           ${
             screenSize === "mobile"
               ? isMobileMenuOpen

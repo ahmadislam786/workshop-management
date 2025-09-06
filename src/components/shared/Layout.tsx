@@ -144,11 +144,11 @@ export const Layout: React.FC<LayoutProps> = ({
         }`}
       >
         <main className="py-8 animate-fade-in bg-gradient-to-br from-gray-50 to-white min-h-screen">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-8">
             {/* Page header for better navigation context */}
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 capitalize">
                   {activeTab === "dashboard" && t("page.dashboard")}
                   {activeTab === "leitstand" && t("nav.controlBoard")}
                   {activeTab === "plantafel" && t("nav.planningBoard")}
@@ -160,7 +160,7 @@ export const Layout: React.FC<LayoutProps> = ({
                     "dialogannahme",
                   ].includes(activeTab) && t(`nav.${activeTab}`)}
                 </h2>
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 mt-1 text-sm sm:text-base">
                   {activeTab === "leitstand" && t("page.controlBoard.desc")}
                   {activeTab === "plantafel" && t("page.planningBoard.desc")}
                   {activeTab === "dialogannahme" && t("page.damageReport.desc")}
@@ -176,7 +176,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 size="sm"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
               >
                 <svg
                   className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}

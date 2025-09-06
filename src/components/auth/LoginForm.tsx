@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Wrench, Eye, EyeOff, Car, Shield, Clock, Mail, Lock } from "lucide-react";
@@ -11,6 +12,7 @@ export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const { signIn } = useAuth();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,9 +21,9 @@ export const LoginForm: React.FC = () => {
 
     try {
       const result = await signIn(email, password);
-      if (!result.success) setError(result.error || "Sign in failed");
+      if (!result.success) setError(result.error || t("login.signInFailed"));
     } catch (error) {
-      setError("An unexpected error occurred");
+      setError(t("login.unexpectedError"));
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +73,7 @@ export const LoginForm: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder={t("login.emailPlaceholder")}
                   leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
                   className="h-12 text-base"
                   required
@@ -91,7 +93,7 @@ export const LoginForm: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t("login.passwordPlaceholder")}
                   leftIcon={<Lock className="h-4 w-4 text-gray-400" />}
                   rightIcon={
                     <button
@@ -127,7 +129,7 @@ export const LoginForm: React.FC = () => {
                 loading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? t("login.signingIn") : t("login.signIn")}
               </Button>
             </form>
 
