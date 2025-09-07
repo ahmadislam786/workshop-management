@@ -19,13 +19,19 @@ interface NotificationContextType {
   unreadCount: number;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
-  addNotification: (notification: Omit<Notification, "id" | "created_at" | "read">) => void;
+  addNotification: (
+    notification: Omit<Notification, "id" | "created_at" | "read">
+  ) => void;
   loading: boolean;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
@@ -62,8 +68,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (error) throw error;
 
-      setNotifications(prev => 
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      setNotifications(prev =>
+        prev.map(n => (n.id === id ? { ...n, read: true } : n))
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -82,25 +88,27 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (error) throw error;
 
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, read: true }))
-      );
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
     }
   };
 
-  const addNotification = async (notification: Omit<Notification, "id" | "created_at" | "read">) => {
+  const addNotification = async (
+    notification: Omit<Notification, "id" | "created_at" | "read">
+  ) => {
     if (!profile) return;
 
     try {
       const { data, error } = await supabase
         .from("notifications")
-        .insert([{
-          ...notification,
-          user_id: profile.id,
-          read: false,
-        }])
+        .insert([
+          {
+            ...notification,
+            user_id: profile.id,
+            read: false,
+          },
+        ])
         .select()
         .single();
 
@@ -127,7 +135,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             table: "notifications",
             filter: `user_id=eq.${profile.id}`,
           },
-          (payload) => {
+          payload => {
             setNotifications(prev => [payload.new as Notification, ...prev]);
           }
         )
@@ -158,7 +166,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error(
+      "useNotifications must be used within a NotificationProvider"
+    );
   }
   return context;
 };

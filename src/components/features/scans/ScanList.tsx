@@ -1,15 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useScans } from "@/hooks/useScans";
-import { useLanguage } from "@/contexts/language-context";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { SearchFilter } from "@/components/ui/SearchFilter";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import {
   Search,
-  Download,
-  Eye,
-  Filter,
   Calendar,
   Clock,
   CheckCircle,
@@ -45,7 +40,7 @@ const openScanPdf = (scan: ScanRecord) => {
     w.document.write(
       "<table><thead><tr><th>Measurement</th><th>Value</th><th>Unit</th><th>Status</th></tr></thead><tbody>"
     );
-    results.forEach((r) => {
+    results.forEach(r => {
       w.document!.write(
         `<tr><td>${r.name || ""}</td><td>${r.value ?? ""}</td><td>${
           r.unit ?? ""
@@ -65,7 +60,6 @@ const openScanPdf = (scan: ScanRecord) => {
 
 export const ScanList: React.FC = () => {
   const { scans, loading, error, refetch } = useScans();
-  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<ScanRecord | null>(null);
   const [selectedDevice, setSelectedDevice] = useState("");
@@ -78,8 +72,8 @@ export const ScanList: React.FC = () => {
     // Search filter
     if (query.trim()) {
       const searchLower = query.trim().toLowerCase();
-      filteredScans = filteredScans.filter((s) => {
-        const searchText = [s.id, s.summary, s.device, s.customer_name]
+      filteredScans = filteredScans.filter(s => {
+        const searchText = [s.id, s.summary, s.device, s.customer?.name || ""]
           .join(" ")
           .toLowerCase();
         return searchText.includes(searchLower);
@@ -88,13 +82,13 @@ export const ScanList: React.FC = () => {
 
     // Device filter
     if (selectedDevice) {
-      filteredScans = filteredScans.filter((s) => s.device === selectedDevice);
+      filteredScans = filteredScans.filter(s => s.device === selectedDevice);
     }
 
     // Date filter
     if (selectedDate) {
       const filterDate = new Date(selectedDate);
-      filteredScans = filteredScans.filter((s) => {
+      filteredScans = filteredScans.filter(s => {
         const scanDate = new Date(s.created_at);
         return scanDate.toDateString() === filterDate.toDateString();
       });
@@ -104,8 +98,8 @@ export const ScanList: React.FC = () => {
   }, [query, scans, selectedDevice, selectedDate]);
 
   const uniqueDevices = useMemo(() => {
-    const devices = [...new Set(scans.map((s) => s.device).filter(Boolean))];
-    return devices.map((device) => ({ value: device, label: device }));
+    const devices = [...new Set(scans.map(s => s.device).filter(Boolean))];
+    return devices.map(device => ({ value: device, label: device }));
   }, [scans]);
 
   const getScanStatus = (scan: ScanRecord) => {
@@ -115,9 +109,9 @@ export const ScanList: React.FC = () => {
     if (results.length === 0) return "no-data";
 
     const hasErrors = results.some(
-      (r) => r.status === "error" || r.status === "warning"
+      r => r.status === "error" || r.status === "warning"
     );
-    const hasWarnings = results.some((r) => r.status === "warning");
+    const hasWarnings = results.some(r => r.status === "warning");
 
     if (hasErrors) return "error";
     if (hasWarnings) return "warning";
@@ -260,7 +254,7 @@ export const ScanList: React.FC = () => {
           {/* Scan List */}
           <div className="lg:col-span-1">
             <div className="bg-white border rounded-lg divide-y max-h-96 overflow-y-auto">
-              {filtered.map((scan) => {
+              {filtered.map(scan => {
                 const status = getScanStatus(scan);
                 return (
                   <button
@@ -278,7 +272,7 @@ export const ScanList: React.FC = () => {
                           {scan.summary || "Scan"}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
-                          {scan.customer_name || "Unknown Customer"}
+                          {scan.customer?.name || "Unknown Customer"}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -327,7 +321,7 @@ export const ScanList: React.FC = () => {
                       <span>ID: {selected.id}</span>
                       <span>Device: {selected.device || "Unknown"}</span>
                       <span>
-                        Customer: {selected.customer_name || "Unknown"}
+                        Customer: {selected.customer?.name || "Unknown"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
@@ -425,7 +419,7 @@ export const ScanList: React.FC = () => {
       ) : (
         /* Grid View */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((scan) => {
+          {filtered.map(scan => {
             const status = getScanStatus(scan);
             return (
               <div
@@ -439,7 +433,7 @@ export const ScanList: React.FC = () => {
                       {scan.summary || "Scan"}
                     </h3>
                     <p className="text-xs text-gray-600 mt-1">
-                      {scan.customer_name || "Unknown Customer"}
+                      {scan.customer?.name || "Unknown Customer"}
                     </p>
                   </div>
                   <div
@@ -476,7 +470,7 @@ export const ScanList: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         openScanPdf(scan);
                       }}

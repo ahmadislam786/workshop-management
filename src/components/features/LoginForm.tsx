@@ -3,7 +3,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Wrench, Eye, EyeOff, Car, Shield, Clock, Mail, Lock } from "lucide-react";
+import {
+  Wrench,
+  Eye,
+  EyeOff,
+  Car,
+  Shield,
+  Clock,
+  Mail,
+  Lock,
+} from "lucide-react";
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -72,7 +81,7 @@ export const LoginForm: React.FC = () => {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder={t("login.emailPlaceholder")}
                   leftIcon={<Mail className="h-4 w-4 text-gray-400" />}
                   className="h-12 text-base"
@@ -92,7 +101,7 @@ export const LoginForm: React.FC = () => {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   placeholder={t("login.passwordPlaceholder")}
                   leftIcon={<Lock className="h-4 w-4 text-gray-400" />}
                   rightIcon={

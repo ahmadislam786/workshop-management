@@ -17,8 +17,18 @@ html {
 }
 
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    "Oxygen",
+    "Ubuntu",
+    "Cantarell",
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,9 +80,9 @@ a:focus-visible {
 
 /* Smooth transitions for better UX */
 * {
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
-    backdrop-filter;
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke,
+    opacity, box-shadow, transform, filter, backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms; /* Slightly longer for better perception */
 }
@@ -243,18 +253,22 @@ a:focus-visible {
 
 /* Enhanced hover effects with better accessibility */
 .hover-lift {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
 }
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.15),
     0 8px 16px -4px rgba(0, 0, 0, 0.08);
 }
 
 .hover-lift:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.15),
     0 8px 16px -4px rgba(0, 0, 0, 0.08);
 }
 
@@ -274,14 +288,16 @@ a:focus-visible {
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.15),
     0 8px 16px -4px rgba(0, 0, 0, 0.08);
   border-color: #e2e8f0;
 }
 
 .card-hover:focus-visible {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 12px 28px -8px rgba(0, 0, 0, 0.15),
     0 8px 16px -4px rgba(0, 0, 0, 0.08);
   border-color: #2563eb;
 }
@@ -437,13 +453,15 @@ a:focus-visible {
 
 .technician-card-hover:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 16px 40px -8px rgba(0, 0, 0, 0.15),
     0 12px 24px -4px rgba(0, 0, 0, 0.08);
 }
 
 .technician-card-hover:focus-visible {
   transform: translateY(-3px);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 16px 40px -8px rgba(0, 0, 0, 0.15),
     0 12px 24px -4px rgba(0, 0, 0, 0.08);
 }
 
@@ -584,13 +602,18 @@ a:focus-visible {
 }
 
 .sidebar-item-hover::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -615,11 +638,11 @@ a:focus-visible {
   .sidebar-mobile {
     transform: translateX(-100%);
   }
-  
+
   .sidebar-mobile.open {
     transform: translateX(0);
   }
-  
+
   .main-content-mobile {
     margin-left: 0 !important;
   }
@@ -630,15 +653,15 @@ a:focus-visible {
   .sidebar-tablet {
     width: 4rem; /* Collapsed by default on tablet */
   }
-  
+
   .sidebar-tablet.expanded {
     width: 16rem;
   }
-  
+
   .main-content-tablet {
     margin-left: 4rem;
   }
-  
+
   .main-content-tablet.expanded {
     margin-left: 16rem;
   }
@@ -649,12 +672,12 @@ a:focus-visible {
   .sidebar-mobile {
     width: 20rem; /* 320px - wider for better touch interaction */
   }
-  
+
   .main-content-mobile {
     margin-left: 0 !important;
     padding-top: 4rem; /* Add top padding for mobile menu button */
   }
-  
+
   .mobile-menu-button {
     position: fixed;
     top: 1rem;

@@ -2,18 +2,20 @@ import React, { useMemo, useState } from "react";
 import { useJobs } from "@/hooks/useJobs";
 import { useTechnicians } from "@/hooks/useTechnicians";
 import { useTeams } from "@/hooks/useTeams";
+import { useLanguage } from "@/contexts/language-context";
 import type { Job } from "@/types";
 
 export const Plantafel: React.FC = () => {
   const { jobs, updateJob } = useJobs();
   const { technicians } = useTechnicians();
   const { teams } = useTeams();
+  const { t } = useLanguage();
   const [team, setTeam] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
   const [inboxQuery, setInboxQuery] = useState("");
 
   const filtered = useMemo(() => {
-    return jobs.filter((j) => {
+    return jobs.filter(j => {
       const teamOk = team === "all" || j.team_id === team;
       const catOk =
         category === "all" ||
@@ -50,10 +52,10 @@ export const Plantafel: React.FC = () => {
         <select
           className="border rounded-md px-2 py-1 text-sm"
           value={team}
-          onChange={(e) => setTeam(e.target.value)}
+          onChange={e => setTeam(e.target.value)}
         >
           <option value="all">All</option>
-          {teams.map((t) => (
+          {teams.map(t => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>
@@ -62,9 +64,9 @@ export const Plantafel: React.FC = () => {
         <label className="text-sm ml-4">Category</label>
         <input
           className="border rounded-md px-2 py-1 text-sm"
-          placeholder="e.g. Elektrik"
+          placeholder={t("plantafel.categoryExample")}
           value={category === "all" ? "" : category}
-          onChange={(e) => setCategory(e.target.value || "all")}
+          onChange={e => setCategory(e.target.value || "all")}
         />
       </div>
 
@@ -74,27 +76,27 @@ export const Plantafel: React.FC = () => {
         <div
           className="bg-white border rounded-md p-3 min-h-64"
           onDragOver={allowDrop}
-          onDrop={async (e) => {
+          onDrop={async e => {
             e.preventDefault();
             const id = e.dataTransfer.getData("text/plain");
             if (id)
               await updateJob(id, {
-                assigned_employee_id: null,
-                team_id: null,
+                assigned_employee_id: undefined,
+                team_id: undefined,
               });
           }}
         >
-          <div className="font-semibold mb-2">Auftragseingang</div>
+          <div className="font-semibold mb-2">{t("plantafel.orderInbox")}</div>
           <input
             className="w-full mb-2 border rounded-md px-2 py-1 text-sm"
-            placeholder="Suche im Eingang…"
+            placeholder={t("plantafel.searchInbox")}
             value={inboxQuery}
-            onChange={(e) => setInboxQuery(e.target.value)}
+            onChange={e => setInboxQuery(e.target.value)}
           />
           <div className="space-y-2">
             {filtered
-              .filter((j) => !j.assigned_employee_id)
-              .filter((j) => {
+              .filter(j => !j.assigned_employee_id)
+              .filter(j => {
                 if (!inboxQuery.trim()) return true;
                 const q = inboxQuery.toLowerCase();
                 const hay = [
@@ -108,13 +110,13 @@ export const Plantafel: React.FC = () => {
                   .toLowerCase();
                 return hay.includes(q);
               })
-              .map((j) => (
+              .map(j => (
                 <div
                   key={j.id}
                   data-job-customer={j.customer_id}
                   data-job-vehicle={j.vehicle_id}
                   draggable
-                  onDragStart={(e) => onDragStart(e, j.id)}
+                  onDragStart={e => onDragStart(e, j.id)}
                   className="bg-gray-50 border rounded p-2 cursor-move"
                 >
                   <div className="text-sm font-medium">{j.service_type}</div>
@@ -127,12 +129,12 @@ export const Plantafel: React.FC = () => {
         </div>
 
         {/* Employee lanes */}
-        {technicians.map((emp) => (
+        {technicians.map(emp => (
           <div
             key={emp.id}
             className="bg-white border rounded-md p-3 min-h-64"
             onDragOver={allowDrop}
-            onDrop={async (e) => {
+            onDrop={async e => {
               e.preventDefault();
               const id = e.dataTransfer.getData("text/plain");
               if (id)
@@ -145,14 +147,14 @@ export const Plantafel: React.FC = () => {
             <div className="font-semibold mb-2">{emp.name}</div>
             <div className="space-y-2">
               {filtered
-                .filter((j) => j.assigned_employee_id === emp.id)
-                .map((j) => (
+                .filter(j => j.assigned_employee_id === emp.id)
+                .map(j => (
                   <div
                     key={j.id}
                     data-job-customer={j.customer_id}
                     data-job-vehicle={j.vehicle_id}
                     draggable
-                    onDragStart={(e) => onDragStart(e, j.id)}
+                    onDragStart={e => onDragStart(e, j.id)}
                     className="bg-gray-50 border rounded p-2 cursor-move"
                   >
                     <div className="text-sm font-medium">{j.service_type}</div>
@@ -168,7 +170,7 @@ export const Plantafel: React.FC = () => {
 
       {/* Status board (optional): keep below for status moves */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {statuses.map((col) => (
+        {statuses.map(col => (
           <div
             key={col}
             className="bg-white border rounded-md p-3 min-h-64"
@@ -180,12 +182,12 @@ export const Plantafel: React.FC = () => {
             </div>
             <div className="space-y-2">
               {filtered
-                .filter((j) => j.status === col)
-                .map((j) => (
+                .filter(j => j.status === col)
+                .map(j => (
                   <div
                     key={j.id}
                     draggable
-                    onDragStart={(e) => onDragStart(e, j.id)}
+                    onDragStart={e => onDragStart(e, j.id)}
                     className="bg-gray-50 border rounded p-2 cursor-move"
                   >
                     <div className="text-sm font-medium">{j.service_type}</div>

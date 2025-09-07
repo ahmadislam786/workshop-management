@@ -14,7 +14,10 @@ export const useDamageReports = () => {
       setError(null);
 
       // Test if damage_reports table exists
-      const { error: tableError } = await supabase.from("damage_reports").select("id").limit(1);
+      const { error: tableError } = await supabase
+        .from("damage_reports")
+        .select("id")
+        .limit(1);
       if (tableError) {
         setError(`Damage reports table not found: ${tableError.message}`);
         return;
@@ -22,7 +25,8 @@ export const useDamageReports = () => {
 
       const { data, error } = await supabase
         .from("damage_reports")
-        .select(`
+        .select(
+          `
           *,
           job:jobs(
             *,
@@ -30,7 +34,8 @@ export const useDamageReports = () => {
             vehicle:vehicles(*),
             technician:technicians(*)
           )
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -69,14 +74,15 @@ export const useDamageReports = () => {
 
     const handleRefresh = () => fetchDamageReports();
     window.addEventListener("refresh-dashboard-data", handleRefresh);
-    return () => window.removeEventListener("refresh-dashboard-data", handleRefresh);
+    return () =>
+      window.removeEventListener("refresh-dashboard-data", handleRefresh);
   }, []);
 
-  return { 
-    damageReports, 
-    loading, 
-    error, 
+  return {
+    damageReports,
+    loading,
+    error,
     refetch: fetchDamageReports,
-    createDamageReport 
+    createDamageReport,
   };
 };

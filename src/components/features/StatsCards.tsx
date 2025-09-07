@@ -22,63 +22,66 @@ interface StatsCardsProps {
 
 export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
   const { t } = useLanguage();
-  
-  const cards = useMemo(() => [
-    {
-      title: t("stats.totalJobs"),
-      value: stats.totalJobs,
-      icon: Wrench,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
-      gradient: "from-blue-500 to-blue-600",
-      description: t("stats.allTimeJobs"),
-    },
-    {
-      title: t("stats.activeCustomers"),
-      value: stats.activeCustomers,
-      icon: Users,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-      gradient: "from-green-500 to-green-600",
-      description: t("stats.engagedCustomers"),
-    },
-    {
-      title: t("stats.technicians"),
-      value: stats.totalTechnicians,
-      icon: User,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
-      gradient: "from-purple-500 to-purple-600",
-      description: t("stats.teamMembers"),
-    },
-    {
-      title: t("stats.pendingJobs"),
-      value: stats.pendingJobs,
-      icon: Clock,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
-      gradient: "from-orange-500 to-orange-600",
-      description: t("stats.awaitingStart"),
-    },
-    {
-      title: t("stats.inProgress"),
-      value: stats.inProgressJobs,
-      icon: AlertCircle,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-100",
-      gradient: "from-yellow-500 to-yellow-600",
-      description: t("stats.currentlyWorking"),
-    },
-    {
-      title: t("stats.completed"),
-      value: stats.completedJobs,
-      icon: CheckCircle,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
-      gradient: "from-emerald-500 to-emerald-600",
-      description: t("stats.successfullyFinished"),
-    },
-  ], [t, stats]);
+
+  const cards = useMemo(
+    () => [
+      {
+        title: t("stats.totalJobs"),
+        value: stats.totalJobs,
+        icon: Wrench,
+        color: "text-blue-600",
+        bgColor: "bg-blue-100",
+        gradient: "from-blue-500 to-blue-600",
+        description: t("stats.allTimeJobs"),
+      },
+      {
+        title: t("stats.activeCustomers"),
+        value: stats.activeCustomers,
+        icon: Users,
+        color: "text-green-600",
+        bgColor: "bg-green-100",
+        gradient: "from-green-500 to-green-600",
+        description: t("stats.engagedCustomers"),
+      },
+      {
+        title: t("stats.technicians"),
+        value: stats.totalTechnicians,
+        icon: User,
+        color: "text-purple-600",
+        bgColor: "bg-purple-100",
+        gradient: "from-purple-500 to-purple-600",
+        description: t("stats.teamMembers"),
+      },
+      {
+        title: t("stats.pendingJobs"),
+        value: stats.pendingJobs,
+        icon: Clock,
+        color: "text-orange-600",
+        bgColor: "bg-orange-100",
+        gradient: "from-orange-500 to-orange-600",
+        description: t("stats.awaitingStart"),
+      },
+      {
+        title: t("stats.inProgress"),
+        value: stats.inProgressJobs,
+        icon: AlertCircle,
+        color: "text-yellow-600",
+        bgColor: "bg-yellow-100",
+        gradient: "from-yellow-500 to-yellow-600",
+        description: t("stats.currentlyWorking"),
+      },
+      {
+        title: t("stats.completed"),
+        value: stats.completedJobs,
+        icon: CheckCircle,
+        color: "text-emerald-600",
+        bgColor: "bg-emerald-100",
+        gradient: "from-emerald-500 to-emerald-600",
+        description: t("stats.successfullyFinished"),
+      },
+    ],
+    [t, stats]
+  );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -91,7 +94,7 @@ export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
             tabIndex={0}
             role="button"
             aria-label={`View ${card.title.toLowerCase()} statistics`}
-            onKeyDown={(e) => {
+            onKeyDown={e => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 // Could add click handler here for future functionality

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { UserManagementService } from "../../lib/user-management";
-import type { CreateUserData } from "../../types";
+import { UserManagementService } from "../../../lib/user-management";
+import type { CreateUserData } from "../../../types";
 import { toast } from "react-toastify";
 import { UserPlus, X } from "lucide-react";
 
@@ -146,10 +146,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
   };
 
   const handleInputChange = (field: keyof UserFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors(prev => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -254,9 +254,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="email"
                       value={formData.email}
-                      onChange={(e) =>
-                        handleInputChange("email", e.target.value)
-                      }
+                      onChange={e => handleInputChange("email", e.target.value)}
                       placeholder="user@example.com"
                       error={errors.email}
                       required
@@ -271,7 +269,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="password"
                       value={formData.password}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("password", e.target.value)
                       }
                       placeholder="Minimum 6 characters"
@@ -288,7 +286,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="password"
                       value={formData.confirmPassword}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("confirmPassword", e.target.value)
                       }
                       placeholder="Confirm your password"
@@ -305,9 +303,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="text"
                       value={formData.name}
-                      onChange={(e) =>
-                        handleInputChange("name", e.target.value)
-                      }
+                      onChange={e => handleInputChange("name", e.target.value)}
                       placeholder="Enter full name"
                       error={errors.name}
                       required
@@ -321,7 +317,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     </label>
                     <Select
                       value={formData.role}
-                      onChange={(value) => handleInputChange("role", value)}
+                      onChange={value => handleInputChange("role", value)}
                       options={[
                         { value: "technician", label: "Technician" },
                         { value: "admin", label: "Administrator" },
@@ -338,9 +334,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) =>
-                        handleInputChange("phone", e.target.value)
-                      }
+                      onChange={e => handleInputChange("phone", e.target.value)}
                       placeholder="+1234567890"
                     />
                   </div>
@@ -355,7 +349,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                     <Input
                       type="text"
                       value={formData.specialization}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleInputChange("specialization", e.target.value)
                       }
                       placeholder="e.g., Engine Repair, Electrical Systems, Brakes"

@@ -217,8 +217,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ? "w-80 translate-x-0"
                 : "w-80 -translate-x-full"
               : isCollapsed
-              ? "w-16 translate-x-0"
-              : "w-64 translate-x-0"
+                ? "w-16 translate-x-0"
+                : "w-64 translate-x-0"
           }
           ${isMobileMenuOpen ? "animate-sidebar-in" : ""}
         `}
@@ -274,7 +274,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Navigation Items */}
           <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-            {tabs.map((tab) => {
+            {tabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
@@ -424,7 +424,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="ml-2">{t("user.notifications")}</span>
                 )}
               </Button>
-
 
               <Button
                 variant="ghost"

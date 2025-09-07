@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Vehicle, Customer } from "../../types";
+import type { Vehicle, Customer } from "../../../types";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useCustomers } from "@/hooks/useCustomers";
 import { Button } from "@/components/ui/Button";
@@ -111,20 +111,18 @@ export const VehicleList: React.FC = () => {
   };
 
   const filteredVehicles = vehicles.filter(
-    (vehicle) =>
+    vehicle =>
       vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
       vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customers
-        .find((c) => c.id === vehicle.customer_id)
+        .find(c => c.id === vehicle.customer_id)
         ?.name.toLowerCase()
         .includes(searchTerm.toLowerCase())
   );
 
   const getCustomerName = (customerId: string) => {
-    return (
-      customers.find((c) => c.id === customerId)?.name || "Unknown Customer"
-    );
+    return customers.find(c => c.id === customerId)?.name || "Unknown Customer";
   };
 
   if (loading) {
@@ -160,7 +158,7 @@ export const VehicleList: React.FC = () => {
             type="text"
             placeholder="Quick search..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -176,10 +174,10 @@ export const VehicleList: React.FC = () => {
               <Select
                 label="Customer"
                 value={formData.customer_id}
-                onChange={(value) =>
+                onChange={value =>
                   setFormData({ ...formData, customer_id: value })
                 }
-                options={customers.map((customer) => ({
+                options={customers.map(customer => ({
                   value: customer.id,
                   label: customer.name,
                 }))}
@@ -190,7 +188,7 @@ export const VehicleList: React.FC = () => {
               <Input
                 placeholder="Make (e.g., Toyota, Honda)"
                 value={formData.make}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, make: e.target.value })
                 }
                 required
@@ -199,7 +197,7 @@ export const VehicleList: React.FC = () => {
               <Input
                 placeholder="Model (e.g., Camry, Civic)"
                 value={formData.model}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, model: e.target.value })
                 }
                 required
@@ -208,7 +206,7 @@ export const VehicleList: React.FC = () => {
               <Input
                 placeholder="License Plate"
                 value={formData.license_plate}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, license_plate: e.target.value })
                 }
                 required
@@ -218,7 +216,7 @@ export const VehicleList: React.FC = () => {
                 type="number"
                 placeholder="Year"
                 value={formData.year}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, year: e.target.value })
                 }
                 min="1900"
@@ -255,7 +253,7 @@ export const VehicleList: React.FC = () => {
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredVehicles.map((vehicle) => (
+          {filteredVehicles.map(vehicle => (
             <div
               key={vehicle.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"

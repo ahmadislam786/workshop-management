@@ -92,7 +92,7 @@ export const Select: React.FC<SelectProps> = ({
         <select
           id={selectId}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
           required={required}
           className={cn(
@@ -123,7 +123,7 @@ export const Select: React.FC<SelectProps> = ({
           )}
 
           {/* Enhanced options with better accessibility */}
-          {options.map((option) => (
+          {options.map(option => (
             <option
               key={option.value}
               value={option.value}

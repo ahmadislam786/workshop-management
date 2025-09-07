@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { Customer, Vehicle } from "../../types";
+import type { Customer, Vehicle } from "../../../types";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -42,7 +42,7 @@ export const CustomerList: React.FC = () => {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch customers with their vehicles
       const { data: customersData, error: customersError } = await supabase
         .from("customers")
@@ -59,10 +59,14 @@ export const CustomerList: React.FC = () => {
       if (vehiclesError) throw vehiclesError;
 
       // Combine customers with their vehicles
-      const customersWithVehicles = customersData?.map(customer => ({
-        ...customer,
-        vehicles: vehiclesData?.filter(vehicle => vehicle.customer_id === customer.id) || []
-      })) || [];
+      const customersWithVehicles: CustomerWithVehicles[] =
+        customersData?.map(customer => ({
+          ...customer,
+          vehicles:
+            vehiclesData?.filter(
+              vehicle => vehicle.customer_id === customer.id
+            ) || [],
+        })) || [];
 
       setCustomers(customersWithVehicles);
     } catch {
@@ -142,14 +146,17 @@ export const CustomerList: React.FC = () => {
   };
 
   const filteredCustomers = customers.filter(
-    (customer) =>
+    customer =>
       customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone?.includes(searchTerm) ||
-      customer.vehicles.some(vehicle => 
-        vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vehicle.model.toLowerCase().includes(searchTerm.toLowerCase())
+      customer.vehicles.some(
+        vehicle =>
+          vehicle.license_plate
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          vehicle.model.toLowerCase().includes(searchTerm.toLowerCase())
       )
   );
 
@@ -173,12 +180,12 @@ export const CustomerList: React.FC = () => {
 
       {/* Enhanced Search */}
       <div className="space-y-4">
-        <CustomerSearch 
+        <CustomerSearch
           onCustomerSelect={handleCustomerSelect}
           placeholder="Search by customer name or license plate..."
           className="max-w-md"
         />
-        
+
         {/* Traditional search as fallback */}
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -186,7 +193,7 @@ export const CustomerList: React.FC = () => {
             type="text"
             placeholder="Quick search..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -202,7 +209,7 @@ export const CustomerList: React.FC = () => {
               <Input
                 placeholder="Full Name"
                 value={formData.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
@@ -211,27 +218,27 @@ export const CustomerList: React.FC = () => {
                 type="email"
                 placeholder="Email"
                 value={formData.email}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, email: e.target.value })
                 }
               />
               <Input
                 placeholder="Phone"
                 value={formData.phone}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
               />
               <Input
                 placeholder="WhatsApp"
                 value={formData.whatsapp}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, whatsapp: e.target.value })
                 }
               />
               <select
                 value={formData.status}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({
                     ...formData,
                     status: e.target.value as "active" | "inactive",
@@ -276,7 +283,7 @@ export const CustomerList: React.FC = () => {
         </div>
       ) : (
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredCustomers.map((customer) => (
+          {filteredCustomers.map(customer => (
             <div
               key={customer.id}
               className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 p-6 border border-gray-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
@@ -306,7 +313,7 @@ export const CustomerList: React.FC = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Vehicle Information */}
                   {customer.vehicles.length > 0 && (
                     <div className="mt-4 pt-3 border-t border-gray-100">
@@ -315,8 +322,11 @@ export const CustomerList: React.FC = () => {
                         Vehicles ({customer.vehicles.length})
                       </h4>
                       <div className="space-y-2">
-                        {customer.vehicles.map((vehicle) => (
-                          <div key={vehicle.id} className="bg-gray-50 rounded-md p-2 text-xs">
+                        {customer.vehicles.map(vehicle => (
+                          <div
+                            key={vehicle.id}
+                            className="bg-gray-50 rounded-md p-2 text-xs"
+                          >
                             <div className="font-medium text-gray-800">
                               {vehicle.make} {vehicle.model}
                             </div>
@@ -328,7 +338,7 @@ export const CustomerList: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="mt-3">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

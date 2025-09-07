@@ -22,13 +22,13 @@ export const TechnicianDashboard: React.FC = () => {
 
   // Filter jobs for the current technician using technician.id
   const technicianJobs = jobs.filter(
-    (job) => job.technician_id === technician?.id
+    job => job.technician_id === technician?.id
   );
 
   // Separate active and completed jobs
-  const activeJobs = technicianJobs.filter((job) => job.status !== "completed");
+  const activeJobs = technicianJobs.filter(job => job.status !== "completed");
   const completedJobs = technicianJobs.filter(
-    (job) => job.status === "completed"
+    job => job.status === "completed"
   );
 
   // Show either active jobs or all jobs based on toggle
@@ -37,8 +37,8 @@ export const TechnicianDashboard: React.FC = () => {
   // Calculate stats
   const stats = {
     totalJobs: technicianJobs.length,
-    pendingJobs: technicianJobs.filter((j) => j.status === "pending").length,
-    inProgressJobs: technicianJobs.filter((j) => j.status === "in_progress")
+    pendingJobs: technicianJobs.filter(j => j.status === "pending").length,
+    inProgressJobs: technicianJobs.filter(j => j.status === "in_progress")
       .length,
     completedJobs: completedJobs.length,
   };
@@ -260,7 +260,7 @@ export const TechnicianDashboard: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {displayJobs.map((job) => (
+              {displayJobs.map(job => (
                 <div
                   key={job.id}
                   className={`bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors duration-200 border border-gray-200 ${

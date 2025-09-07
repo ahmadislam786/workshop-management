@@ -315,12 +315,121 @@ export interface Database {
           created_at?: string;
         };
       };
+      skills: {
+        Row: {
+          id: string;
+          name: string;
+          category: string;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: string;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          category?: string;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
+      technician_skills: {
+        Row: {
+          id: string;
+          technician_id: string;
+          skill_id: string;
+          proficiency_level: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          technician_id: string;
+          skill_id: string;
+          proficiency_level?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          technician_id?: string;
+          skill_id?: string;
+          proficiency_level?: number;
+          created_at?: string;
+        };
+      };
     };
     Views: {
-      [_ in never]: never;
+      technician_skills_view: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          job_count: number;
+          created_at: string;
+          updated_at: string;
+          skills_list: string;
+          skill_categories: string;
+          skill_count: number;
+        };
+      };
+      job_details_view: {
+        Row: {
+          id: string;
+          service_type: string;
+          status: string;
+          scheduled_start: string | null;
+          scheduled_end: string | null;
+          duration_hours: number | null;
+          ai_duration_hour: number | null;
+          source: string;
+          notes: string | null;
+          created_at: string;
+          customer_name: string;
+          customer_email: string | null;
+          customer_phone: string | null;
+          vehicle_make: string;
+          vehicle_model: string;
+          license_plate: string;
+          vehicle_year: number;
+          technician_name: string | null;
+          technician_email: string | null;
+        };
+      };
     };
     Functions: {
-      [_ in never]: never;
+      find_technicians_by_skills: {
+        Args: {
+          required_skills: string[];
+        };
+        Returns: {
+          technician_id: string;
+          technician_name: string;
+          email: string;
+          matched_skills: string;
+          skill_match_count: number;
+          total_skills: number;
+          match_percentage: number;
+        }[];
+      };
+      get_job_recommendations_for_technician: {
+        Args: {
+          tech_id: string;
+        };
+        Returns: {
+          job_id: string;
+          service_type: string;
+          customer_name: string;
+          vehicle_info: string;
+          required_skills: string;
+          technician_skills: string;
+          skill_match_count: number;
+          match_percentage: number;
+        }[];
+      };
     };
     Enums: {
       [_ in never]: never;

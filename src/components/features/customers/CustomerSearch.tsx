@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useVehicles } from "@/hooks/useVehicles";
 import { Search, User, Car, X } from "lucide-react";
-import type { Customer, Vehicle } from "../../types";
+import type { Customer, Vehicle } from "../../../types";
 
 interface CustomerSearchProps {
   onCustomerSelect?: (customer: Customer, vehicle?: Vehicle) => void;
@@ -11,7 +11,7 @@ interface CustomerSearchProps {
 }
 
 interface SearchResult {
-  type: 'customer' | 'vehicle';
+  type: "customer" | "vehicle";
   customer: Customer;
   vehicle?: Vehicle;
   displayText: string;
@@ -21,7 +21,7 @@ interface SearchResult {
 export const CustomerSearch: React.FC<CustomerSearchProps> = ({
   onCustomerSelect,
   placeholder = "Search by customer name or license plate...",
-  className = ""
+  className = "",
 }) => {
   const { customers } = useCustomers();
   const { vehicles } = useVehicles();
@@ -39,31 +39,36 @@ export const CustomerSearch: React.FC<CustomerSearchProps> = ({
 
     // Search by customer name (last name priority)
     customers.forEach(customer => {
-      const nameParts = customer.name.toLowerCase().split(' ');
+      const nameParts = customer.name.toLowerCase().split(" ");
       const lastName = nameParts[nameParts.length - 1];
-      
-      if (customer.name.toLowerCase().includes(term) || lastName.includes(term)) {
+
+      if (
+        customer.name.toLowerCase().includes(term) ||
+        lastName.includes(term)
+      ) {
         // Find all vehicles for this customer
-        const customerVehicles = vehicles.filter(v => v.customer_id === customer.id);
-        
+        const customerVehicles = vehicles.filter(
+          v => v.customer_id === customer.id
+        );
+
         if (customerVehicles.length > 0) {
           // Add each vehicle as a separate result
           customerVehicles.forEach(vehicle => {
             results.push({
-              type: 'vehicle',
+              type: "vehicle",
               customer,
               vehicle,
               displayText: `${customer.name} - ${vehicle.make} ${vehicle.model} (${vehicle.license_plate})`,
-              searchText: `${customer.name} ${vehicle.license_plate} ${vehicle.make} ${vehicle.model}`
+              searchText: `${customer.name} ${vehicle.license_plate} ${vehicle.make} ${vehicle.model}`,
             });
           });
         } else {
           // Customer without vehicles
           results.push({
-            type: 'customer',
+            type: "customer",
             customer,
             displayText: `${customer.name} (No vehicles)`,
-            searchText: customer.name
+            searchText: customer.name,
           });
         }
       }
@@ -75,32 +80,37 @@ export const CustomerSearch: React.FC<CustomerSearchProps> = ({
         const customer = customers.find(c => c.id === vehicle.customer_id);
         if (customer) {
           results.push({
-            type: 'vehicle',
+            type: "vehicle",
             customer,
             vehicle,
             displayText: `${vehicle.license_plate} - ${customer.name} (${vehicle.make} ${vehicle.model})`,
-            searchText: `${vehicle.license_plate} ${customer.name} ${vehicle.make} ${vehicle.model}`
+            searchText: `${vehicle.license_plate} ${customer.name} ${vehicle.make} ${vehicle.model}`,
           });
         }
       }
     });
 
     // Remove duplicates and sort by relevance
-    const uniqueResults = results.filter((result, index, self) => 
-      index === self.findIndex(r => 
-        r.customer.id === result.customer.id && 
-        (!result.vehicle || !r.vehicle || r.vehicle.id === result.vehicle.id)
-      )
+    const uniqueResults = results.filter(
+      (result, index, self) =>
+        index ===
+        self.findIndex(
+          r =>
+            r.customer.id === result.customer.id &&
+            (!result.vehicle ||
+              !r.vehicle ||
+              r.vehicle.id === result.vehicle.id)
+        )
     );
 
     // Sort by relevance (exact matches first, then partial matches)
     return uniqueResults.sort((a, b) => {
       const aExact = a.searchText.toLowerCase().startsWith(term);
       const bExact = b.searchText.toLowerCase().startsWith(term);
-      
+
       if (aExact && !bExact) return -1;
       if (!aExact && bExact) return 1;
-      
+
       return a.searchText.length - b.searchText.length;
     });
   }, [searchTerm, customers, vehicles]);
@@ -120,23 +130,23 @@ export const CustomerSearch: React.FC<CustomerSearchProps> = ({
     if (!isOpen) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex(prev =>
           prev < searchResults.length - 1 ? prev + 1 : prev
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : 0);
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (searchResults[selectedIndex]) {
           handleResultSelect(searchResults[selectedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setIsOpen(false);
         setSearchTerm("");
         break;
@@ -199,17 +209,27 @@ export const CustomerSearch: React.FC<CustomerSearchProps> = ({
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
           {searchResults.map((result, index) => (
             <div
-              key={`${result.customer.id}-${result.vehicle?.id || 'no-vehicle'}`}
+              key={`${result.customer.id}-${result.vehicle?.id || "no-vehicle"}`}
               className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                index === selectedIndex ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                index === selectedIndex
+                  ? "bg-blue-50 border-l-4 border-blue-500"
+                  : ""
               }`}
               onClick={() => handleResultSelect(result)}
             >
               <div className="flex items-center space-x-3">
-                <div className={`p-2 rounded-full ${
-                  result.type === 'vehicle' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
-                }`}>
-                  {result.type === 'vehicle' ? <Car className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                <div
+                  className={`p-2 rounded-full ${
+                    result.type === "vehicle"
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {result.type === "vehicle" ? (
+                    <Car className="h-4 w-4" />
+                  ) : (
+                    <User className="h-4 w-4" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900 truncate">

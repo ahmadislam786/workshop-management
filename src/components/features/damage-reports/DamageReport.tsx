@@ -31,7 +31,7 @@ export const DamageReport: React.FC<{ jobId?: string }> = ({ jobId }) => {
     }
   };
 
-  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = e => {
     const f = e.target.files?.[0];
     if (f) handleFile(f);
   };
@@ -42,7 +42,7 @@ export const DamageReport: React.FC<{ jobId?: string }> = ({ jobId }) => {
         label="Damage comments"
         placeholder="Describe damages…"
         value={comment}
-        onChange={(e) => setComment(e.target.value)}
+        onChange={e => setComment(e.target.value)}
       />
       <div className="flex items-center gap-3">
         <Button onClick={handlePick} disabled={uploading}>
@@ -77,7 +77,7 @@ export const DamageReport: React.FC<{ jobId?: string }> = ({ jobId }) => {
               await createDamageReport({
                 job_id: jobId,
                 comment,
-                photo_url: fileUrl,
+                photo_url: fileUrl || undefined,
               });
               setComment("");
               setFileUrl(null);

@@ -160,7 +160,7 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
         return;
       }
 
-      const user = users.users.find((u) => u.email === resetPasswordData.email);
+      const user = users.users.find(u => u.email === resetPasswordData.email);
       if (!user) {
         toast.error("User with this email address not found");
         return;
@@ -191,7 +191,7 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
   };
 
   const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
-    setShowPasswords((prev) => ({
+    setShowPasswords(prev => ({
       ...prev,
       [field]: !prev[field],
     }));
@@ -215,7 +215,7 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
     >
       <div
         className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header with close button */}
         <div className="flex items-center justify-between mb-6">
@@ -273,8 +273,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
                 <Input
                   type={showPasswords.current ? "text" : "password"}
                   value={changePasswordData.currentPassword}
-                  onChange={(e) =>
-                    setChangePasswordData((prev) => ({
+                  onChange={e =>
+                    setChangePasswordData(prev => ({
                       ...prev,
                       currentPassword: e.target.value,
                     }))
@@ -306,8 +306,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
                 <Input
                   type={showPasswords.new ? "text" : "password"}
                   value={changePasswordData.newPassword}
-                  onChange={(e) =>
-                    setChangePasswordData((prev) => ({
+                  onChange={e =>
+                    setChangePasswordData(prev => ({
                       ...prev,
                       newPassword: e.target.value,
                     }))
@@ -339,8 +339,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
                 <Input
                   type={showPasswords.confirm ? "text" : "password"}
                   value={changePasswordData.confirmPassword}
-                  onChange={(e) =>
-                    setChangePasswordData((prev) => ({
+                  onChange={e =>
+                    setChangePasswordData(prev => ({
                       ...prev,
                       confirmPassword: e.target.value,
                     }))
@@ -385,8 +385,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
               <Input
                 type="email"
                 value={resetPasswordData.email}
-                onChange={(e) =>
-                  setResetPasswordData((prev) => ({
+                onChange={e =>
+                  setResetPasswordData(prev => ({
                     ...prev,
                     email: e.target.value,
                   }))
@@ -405,8 +405,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
                 <Input
                   type={showPasswords.resetNew ? "text" : "password"}
                   value={resetPasswordData.newPassword}
-                  onChange={(e) =>
-                    setResetPasswordData((prev) => ({
+                  onChange={e =>
+                    setResetPasswordData(prev => ({
                       ...prev,
                       newPassword: e.target.value,
                     }))
@@ -438,8 +438,8 @@ export const PasswordManagement: React.FC<PasswordManagementProps> = ({
                 <Input
                   type={showPasswords.resetConfirm ? "text" : "password"}
                   value={resetPasswordData.confirmPassword}
-                  onChange={(e) =>
-                    setResetPasswordData((prev) => ({
+                  onChange={e =>
+                    setResetPasswordData(prev => ({
                       ...prev,
                       confirmPassword: e.target.value,
                     }))

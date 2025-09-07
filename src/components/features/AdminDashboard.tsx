@@ -5,8 +5,8 @@ import { useTechnicians } from "@/hooks/useTechnicians";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { StatsCards } from "./StatsCards";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { PasswordManagement } from "@/components/admin/PasswordManagement";
+import { UserManagement } from "@/components/features/admin/UserManagement";
+import { PasswordManagement } from "@/components/features/admin/PasswordManagement";
 import type { Job } from "../../types";
 import { formatTimeFromLocal, formatDateTimeLocal } from "@/lib/utils";
 import {
@@ -45,13 +45,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // Calculate stats from real data
   const totalJobs = jobs?.length || 0;
   const activeCustomers =
-    customers?.filter((c) => c.status === "active").length || 0;
+    customers?.filter(c => c.status === "active").length || 0;
   const totalTechnicians = technicians?.length || 0;
-  const activeJobs =
-    jobs?.filter((j) => j.status === "in_progress").length || 0;
-  const pendingJobs = jobs?.filter((j) => j.status === "pending").length || 0;
-  const completedJobs =
-    jobs?.filter((j) => j.status === "completed").length || 0;
+  const activeJobs = jobs?.filter(j => j.status === "in_progress").length || 0;
+  const pendingJobs = jobs?.filter(j => j.status === "pending").length || 0;
+  const completedJobs = jobs?.filter(j => j.status === "completed").length || 0;
 
   // Calculate additional real metrics
   const totalRevenue = completedJobs * 150; // Estimate €150 per completed job
@@ -118,7 +116,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const getJobsForDate = (date: Date) => {
-    return jobs.filter((job) => {
+    return jobs.filter(job => {
       if (!job.scheduled_start) return false;
       const jobDate = new Date(job.scheduled_start);
       return (
@@ -339,16 +337,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </h2>
           <span className="bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
             {
-              jobs.filter(
-                (job) => job.status === "pending" && !job.technician_id
-              ).length
+              jobs.filter(job => job.status === "pending" && !job.technician_id)
+                .length
             }{" "}
             {t("dashboard.jobs")}
           </span>
         </div>
 
         <div className="space-y-3 max-h-48 overflow-y-auto">
-          {jobs.filter((job) => job.status === "pending" && !job.technician_id)
+          {jobs.filter(job => job.status === "pending" && !job.technician_id)
             .length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-300" />
@@ -356,9 +353,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           ) : (
             jobs
-              .filter((job) => job.status === "pending" && !job.technician_id)
+              .filter(job => job.status === "pending" && !job.technician_id)
               .slice(0, 5)
-              .map((job) => (
+              .map(job => (
                 <div
                   key={job.id}
                   className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
@@ -388,7 +385,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       size="sm"
                       variant="outline"
                       className="mt-1 text-xs border-orange-300 text-orange-700 hover:bg-orange-100"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleViewAllJobs();
                       }}
@@ -401,7 +398,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
         </div>
 
-        {jobs.filter((job) => job.status === "pending" && !job.technician_id)
+        {jobs.filter(job => job.status === "pending" && !job.technician_id)
           .length > 5 && (
           <div className="mt-4 text-center">
             <Button
@@ -413,7 +410,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {t("job.viewAllOpenJobs")} (
               {
                 jobs.filter(
-                  (job) => job.status === "pending" && !job.technician_id
+                  job => job.status === "pending" && !job.technician_id
                 ).length
               }
               )
@@ -462,7 +459,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               t("calendar.thursday"),
               t("calendar.friday"),
               t("calendar.saturday"),
-            ].map((day) => (
+            ].map(day => (
               <div
                 key={day}
                 className="p-2 text-center text-sm font-medium text-gray-500"
@@ -491,10 +488,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   {/* Jobs for this day */}
                   <div className="space-y-1">
-                    {jobsForDay.slice(0, 2).map((job) => (
+                    {jobsForDay.slice(0, 2).map(job => (
                       <div
                         key={job.id}
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleJobClick(job);
                         }}
@@ -551,7 +548,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         ) : jobs && jobs.length > 0 ? (
           <div className="space-y-4">
-            {jobs.slice(0, 5).map((job) => (
+            {jobs.slice(0, 5).map(job => (
               <div
                 key={job.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
@@ -580,7 +577,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleViewAllJobs();
                       }}
@@ -590,7 +587,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleViewAllJobs();
                       }}

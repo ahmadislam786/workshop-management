@@ -13,7 +13,9 @@ export class UserManagementService {
   /**
    * Create a new user with the specified role
    */
-  static async createUser(userData: CreateUserData): Promise<UserCreationResult> {
+  static async createUser(
+    userData: CreateUserData
+  ): Promise<UserCreationResult> {
     try {
       // Strategy 1: Service Role Key (Production Recommended)
       if (config.serviceRoleKey) {
@@ -232,9 +234,9 @@ export class UserManagementService {
 
       if (error) throw error;
 
-      const admins = profiles?.filter((p) => p.role === "admin").length || 0;
+      const admins = profiles?.filter(p => p.role === "admin").length || 0;
       const technicians =
-        profiles?.filter((p) => p.role === "technician").length || 0;
+        profiles?.filter(p => p.role === "technician").length || 0;
 
       return { admins, technicians };
     } catch (error) {

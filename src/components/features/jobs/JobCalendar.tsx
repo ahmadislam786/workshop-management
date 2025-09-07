@@ -11,7 +11,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import type { Job } from "../../types";
+import type { Job } from "../../../types";
 import { formatTimeFromLocal, formatDateTimeLocal } from "@/lib/utils";
 
 interface CalendarSlot {
@@ -29,7 +29,7 @@ interface OpenJobPoolProps {
 
 const OpenJobPool: React.FC<OpenJobPoolProps> = ({ jobs, onJobDragStart }) => {
   const openJobs = jobs.filter(
-    (job) => job.status === "pending" && !job.technician_id
+    job => job.status === "pending" && !job.technician_id
   );
 
   if (openJobs.length === 0) {
@@ -48,11 +48,11 @@ const OpenJobPool: React.FC<OpenJobPoolProps> = ({ jobs, onJobDragStart }) => {
         Open Job Pool ({openJobs.length})
       </h3>
       <div className="space-y-2 max-h-40 overflow-y-auto">
-        {openJobs.map((job) => (
+        {openJobs.map(job => (
           <div
             key={job.id}
             draggable
-            onDragStart={(e) => onJobDragStart(job, e)}
+            onDragStart={e => onJobDragStart(job, e)}
             className="bg-orange-50 border border-orange-200 rounded-lg p-3 cursor-move hover:bg-orange-100 transition-colors"
           >
             <div className="flex items-center justify-between">
@@ -103,7 +103,7 @@ export const JobCalendar: React.FC = () => {
           slotDate.setHours(hour, 0, 0, 0);
 
           // Check if there's a job scheduled for this slot
-          const scheduledJob = jobs.find((job) => {
+          const scheduledJob = jobs.find(job => {
             if (!job.scheduled_start || job.status !== "scheduled")
               return false;
             const jobDate = new Date(job.scheduled_start);
@@ -230,7 +230,7 @@ export const JobCalendar: React.FC = () => {
   };
 
   const getJobsForDate = (date: Date) => {
-    return jobs.filter((job) => {
+    return jobs.filter(job => {
       if (!job.scheduled_start) return false;
       const jobDate = new Date(job.scheduled_start);
       return (
@@ -372,7 +372,7 @@ export const JobCalendar: React.FC = () => {
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="grid grid-cols-8 bg-gray-50 border-b border-gray-200">
             <div className="p-3 text-sm font-medium text-gray-500">Time</div>
-            {weekDays.map((day) => (
+            {weekDays.map(day => (
               <div
                 key={day}
                 className="p-3 text-center text-sm font-medium text-gray-500"
@@ -390,7 +390,7 @@ export const JobCalendar: React.FC = () => {
                 </div>
                 {weekDays.map((_, dayIndex) => {
                   const slot = weekSlots.find(
-                    (s) =>
+                    s =>
                       s.date.getDay() === (dayIndex + 1) % 7 &&
                       s.hour === hour + 8
                   );
@@ -409,7 +409,7 @@ export const JobCalendar: React.FC = () => {
                       className={`border-r border-gray-200 min-h-[60px] p-1 ${
                         slot.isAvailable ? "bg-green-50" : "bg-blue-50"
                       }`}
-                      onDrop={(e) => handleSlotDrop(slot, e)}
+                      onDrop={e => handleSlotDrop(slot, e)}
                       onDragOver={handleSlotDragOver}
                     >
                       {slot.job ? (
@@ -444,7 +444,7 @@ export const JobCalendar: React.FC = () => {
       {viewMode === "month" && (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
               <div
                 key={day}
                 className="px-3 py-2 text-center text-sm font-medium text-gray-500"
@@ -489,10 +489,10 @@ export const JobCalendar: React.FC = () => {
                   </div>
 
                   <div className="space-y-1">
-                    {jobsForDay.slice(0, 3).map((job) => (
+                    {jobsForDay.slice(0, 3).map(job => (
                       <div
                         key={job.id}
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleJobClick(job);
                         }}

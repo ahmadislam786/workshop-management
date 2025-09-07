@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useJobs } from "@/hooks/useJobs";
 import { useTeams } from "@/hooks/useTeams";
 import { useLanguage } from "@/contexts/language-context";
@@ -12,10 +12,7 @@ import {
   Wrench,
   User,
   Car,
-  Filter,
   RefreshCw,
-  Eye,
-  Edit,
   X,
 } from "lucide-react";
 
@@ -42,7 +39,7 @@ export const Leitstand: React.FC = () => {
     const groups: Record<string, JobGroup> = {};
 
     // Create groups for each team
-    teams.forEach((team) => {
+    teams.forEach(team => {
       groups[team.id] = {
         team: team.name,
         jobs: [],
@@ -63,7 +60,7 @@ export const Leitstand: React.FC = () => {
       pending: 0,
     };
 
-    jobs.forEach((job) => {
+    jobs.forEach(job => {
       const teamId = job.team_id || "unassigned";
 
       if (!groups[teamId]) {
@@ -98,15 +95,13 @@ export const Leitstand: React.FC = () => {
 
   // Filter groups based on search and filters
   const filteredGroups = useMemo(() => {
-    return jobGroups.filter((group) => {
+    return jobGroups.filter(group => {
       // Team filter
       if (selectedTeam && group.team !== selectedTeam) return false;
 
       // Status filter
       if (selectedStatus) {
-        const hasStatus = group.jobs.some(
-          (job) => job.status === selectedStatus
-        );
+        const hasStatus = group.jobs.some(job => job.status === selectedStatus);
         if (!hasStatus) return false;
       }
 
@@ -114,7 +109,7 @@ export const Leitstand: React.FC = () => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const hasMatch = group.jobs.some(
-          (job) =>
+          job =>
             job.service_type?.toLowerCase().includes(searchLower) ||
             job.customer?.name?.toLowerCase().includes(searchLower) ||
             job.vehicle?.make?.toLowerCase().includes(searchLower) ||
@@ -209,7 +204,7 @@ export const Leitstand: React.FC = () => {
           filters={{
             team: {
               label: "Team",
-              options: jobGroups.map((group) => ({
+              options: jobGroups.map(group => ({
                 value: group.team,
                 label: group.team,
                 count: group.total,
@@ -233,7 +228,7 @@ export const Leitstand: React.FC = () => {
 
       {/* Team Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredGroups.map((group) => (
+        {filteredGroups.map(group => (
           <div
             key={group.team}
             className="bg-white rounded-lg border border-gray-200 shadow-sm"
@@ -270,7 +265,7 @@ export const Leitstand: React.FC = () => {
 
             {/* Jobs List */}
             <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-              {group.jobs.map((job) => (
+              {group.jobs.map(job => (
                 <div
                   key={job.id}
                   className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
@@ -316,7 +311,7 @@ export const Leitstand: React.FC = () => {
 
               {group.jobs.length === 0 && (
                 <div className="p-4 text-center text-gray-500 text-sm">
-                  No jobs found
+                  {t("dashboard.noJobsFound")}
                 </div>
               )}
             </div>

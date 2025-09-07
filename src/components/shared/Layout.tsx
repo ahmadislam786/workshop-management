@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/language-context";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { LoginForm } from "@/components/features/LoginForm";
 import { Button } from "@/components/ui/Button";
 
 interface LayoutProps {

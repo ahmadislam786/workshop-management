@@ -3,7 +3,7 @@ import { useJobs } from "@/hooks/useJobs";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useVehicles } from "@/hooks/useVehicles";
 import { useTechnicians } from "@/hooks/useTechnicians";
-import type { Job, Customer, Vehicle } from "../../types";
+import type { Job, Customer, Vehicle } from "../../../types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -32,7 +32,9 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
   const { vehicles } = useVehicles();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
   const [formData, setFormData] = useState({
@@ -86,13 +88,13 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
   const handleCustomerSelect = (customer: Customer, vehicle?: Vehicle) => {
     setSelectedCustomer(customer);
     setSelectedVehicle(vehicle || null);
-    
+
     setFormData({
       ...formData,
       customer_id: customer.id,
       vehicle_id: vehicle?.id || "",
     });
-    
+
     setErrors({ ...errors, customer_id: "", vehicle_id: "" });
   };
 
@@ -153,7 +155,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
 
   // Filter vehicles based on selected customer
   const availableVehicles = vehicles.filter(
-    (v) => v.customer_id === formData.customer_id
+    v => v.customer_id === formData.customer_id
   );
 
   return (
@@ -202,13 +204,13 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <User className="h-4 w-4 mr-2" />
               Customer & Vehicle Information
             </h4>
-            
+
             {/* Enhanced Search */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-blue-900 mb-2">
                 Quick Search
               </label>
-              <CustomerSearch 
+              <CustomerSearch
                 onCustomerSelect={handleCustomerSelect}
                 placeholder="Search by customer name or license plate..."
               />
@@ -229,7 +231,8 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                   <div className="flex items-center space-x-2">
                     <Car className="h-4 w-4 text-blue-600" />
                     <span className="text-sm font-medium text-blue-800">
-                      Vehicle: {selectedVehicle.make} {selectedVehicle.model} ({selectedVehicle.license_plate})
+                      Vehicle: {selectedVehicle.make} {selectedVehicle.model} (
+                      {selectedVehicle.license_plate})
                     </span>
                   </div>
                 )}
@@ -241,7 +244,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <Select
                 label="Customer (Fallback)"
                 value={formData.customer_id}
-                onChange={(value) => {
+                onChange={value => {
                   setFormData({
                     ...formData,
                     customer_id: value,
@@ -249,7 +252,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                   });
                   setErrors({ ...errors, customer_id: "" });
                 }}
-                options={customers.map((customer) => ({
+                options={customers.map(customer => ({
                   value: customer.id,
                   label: customer.name,
                 }))}
@@ -262,11 +265,11 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <Select
                 label="Vehicle (Fallback)"
                 value={formData.vehicle_id}
-                onChange={(value) => {
+                onChange={value => {
                   setFormData({ ...formData, vehicle_id: value });
                   setErrors({ ...errors, vehicle_id: "" });
                 }}
-                options={availableVehicles.map((vehicle) => ({
+                options={availableVehicles.map(vehicle => ({
                   value: vehicle.id,
                   label: `${vehicle.make} ${vehicle.model} (${vehicle.license_plate})`,
                 }))}
@@ -289,10 +292,10 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <Select
                 label="Technician"
                 value={formData.technician_id}
-                onChange={(value) =>
+                onChange={value =>
                   setFormData({ ...formData, technician_id: value })
                 }
-                options={technicians.map((tech) => ({
+                options={technicians.map(tech => ({
                   value: tech.id,
                   label: `${tech.name} - ${tech.specialization || "General"}`,
                 }))}
@@ -303,7 +306,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <Input
                 label="Service Type"
                 value={formData.service_type}
-                onChange={(e) => {
+                onChange={e => {
                   setFormData({ ...formData, service_type: e.target.value });
                   setErrors({ ...errors, service_type: "" });
                 }}
@@ -316,7 +319,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               <Select
                 label="Status"
                 value={formData.status}
-                onChange={(value) =>
+                onChange={value =>
                   setFormData({ ...formData, status: value as Job["status"] })
                 }
                 options={[
@@ -342,7 +345,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 label="Scheduled Start"
                 type="datetime-local"
                 value={formData.scheduled_start}
-                onChange={(e) => {
+                onChange={e => {
                   handleTimeChange("scheduled_start", e.target.value);
                 }}
                 leftIcon={<Clock className="h-4 w-4" />}
@@ -352,7 +355,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 label="Scheduled End"
                 type="datetime-local"
                 value={formData.scheduled_end}
-                onChange={(e) => {
+                onChange={e => {
                   handleTimeChange("scheduled_end", e.target.value);
                 }}
                 leftIcon={<Clock className="h-4 w-4" />}
@@ -384,7 +387,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                     step="0.5"
                     min="0"
                     value={formData.duration_hours || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setFormData({
                         ...formData,
                         duration_hours: e.target.value
@@ -419,7 +422,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                     step="0.5"
                     min="0"
                     value={formData.ai_duration_hour || ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setFormData({
                         ...formData,
                         ai_duration_hour: e.target.value
@@ -444,7 +447,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                         name="source"
                         value="manual"
                         checked={formData.source === "manual"}
-                        onChange={(e) =>
+                        onChange={e =>
                           setFormData({
                             ...formData,
                             source: e.target.value as "email" | "manual",
@@ -462,7 +465,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                         name="source"
                         value="email"
                         checked={formData.source === "email"}
-                        onChange={(e) =>
+                        onChange={e =>
                           setFormData({
                             ...formData,
                             source: e.target.value as "email" | "manual",
@@ -485,7 +488,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 </label>
                 <textarea
                   value={formData.parts_needed}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, parts_needed: e.target.value })
                   }
                   rows={3}
@@ -501,7 +504,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
                 </label>
                 <textarea
                   value={formData.notes}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFormData({ ...formData, notes: e.target.value })
                   }
                   rows={3}

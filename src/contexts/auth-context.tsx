@@ -189,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     let subscription: any;
-    checkAndSetupListener().then((sub) => {
+    checkAndSetupListener().then(sub => {
       subscription = sub;
     });
 

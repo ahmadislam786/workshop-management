@@ -36,7 +36,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
   const [, setActiveFilters] = useState<Set<string>>(new Set());
 
   const hasActiveFilters = useMemo(() => {
-    return Object.values(filters).some((filter) => filter.value !== "");
+    return Object.values(filters).some(filter => filter.value !== "");
   }, [filters]);
 
   const handleFilterChange = (filterKey: string, value: string) => {
@@ -45,7 +45,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
       filter.onChange(value);
 
       // Update active filters state
-      setActiveFilters((prev) => {
+      setActiveFilters(prev => {
         const newSet = new Set(prev);
         if (value === "") {
           newSet.delete(filterKey);
@@ -58,14 +58,13 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
   };
 
   const clearAllFilters = () => {
-    Object.keys(filters).forEach((filterKey) => {
+    Object.keys(filters).forEach(filterKey => {
       handleFilterChange(filterKey, "");
     });
   };
 
   const getActiveFiltersCount = () => {
-    return Object.values(filters).filter((filter) => filter.value !== "")
-      .length;
+    return Object.values(filters).filter(filter => filter.value !== "").length;
   };
 
   return (
@@ -76,7 +75,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         <div className="flex-1">
           <Input
             value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={e => onSearchChange(e.target.value)}
             placeholder={placeholder}
             leftIcon={<Search className="h-4 w-4" />}
             className="w-full"
@@ -140,13 +139,11 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
                 </label>
                 <select
                   value={filter.value}
-                  onChange={(e) =>
-                    handleFilterChange(filterKey, e.target.value)
-                  }
+                  onChange={e => handleFilterChange(filterKey, e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All {filter.label}</option>
-                  {filter.options.map((option) => (
+                  {filter.options.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                       {option.count !== undefined && ` (${option.count})`}
@@ -166,7 +163,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
             if (filter.value === "") return null;
 
             const selectedOption = filter.options.find(
-              (opt) => opt.value === filter.value
+              opt => opt.value === filter.value
             );
             if (!selectedOption) return null;
 

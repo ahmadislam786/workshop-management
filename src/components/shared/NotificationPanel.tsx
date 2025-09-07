@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Bell, X, Check, CheckCheck, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/contexts/notification-context";
@@ -10,8 +10,12 @@ interface NotificationPanelProps {
   onClose: () => void;
 }
 
-export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, onClose }) => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
+export const NotificationPanel: React.FC<NotificationPanelProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } =
+    useNotifications();
   const { t } = useLanguage();
 
   const getNotificationIcon = (type: string) => {
@@ -45,12 +49,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-25" 
+      <div
+        className="absolute inset-0 bg-black bg-opacity-25"
         onClick={onClose}
         aria-hidden="true"
       />
-      
+
       {/* Panel */}
       <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl">
         <div className="flex h-full flex-col">
@@ -105,7 +109,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {notifications.map((notification) => (
+                {notifications.map(notification => (
                   <div
                     key={notification.id}
                     className={cn(
@@ -118,16 +122,20 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
                       <span className="text-lg flex-shrink-0">
                         {getNotificationIcon(notification.type)}
                       </span>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className={cn(
-                            "text-sm font-medium",
-                            !notification.read ? "text-gray-900" : "text-gray-600"
-                          )}>
+                          <h3
+                            className={cn(
+                              "text-sm font-medium",
+                              !notification.read
+                                ? "text-gray-900"
+                                : "text-gray-600"
+                            )}
+                          >
                             {notification.title}
                           </h3>
-                          
+
                           {!notification.read && (
                             <Button
                               variant="ghost"
@@ -139,22 +147,24 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
                             </Button>
                           )}
                         </div>
-                        
+
                         <p className="text-sm text-gray-600 mt-1">
                           {notification.message}
                         </p>
-                        
+
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-xs text-gray-400">
                             {new Date(notification.created_at).toLocaleString()}
                           </span>
-                          
+
                           {notification.action_url && (
                             <Button
                               variant="ghost"
                               size="sm"
                               className="text-blue-600 hover:text-blue-700 p-1"
-                              onClick={() => window.open(notification.action_url, '_blank')}
+                              onClick={() =>
+                                window.open(notification.action_url, "_blank")
+                              }
                             >
                               <ExternalLink className="h-3 w-3" />
                             </Button>

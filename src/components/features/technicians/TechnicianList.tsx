@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import type { Technician } from "../../types";
+import type { Technician } from "../../../types";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import {
@@ -30,6 +31,7 @@ export const TechnicianList: React.FC = () => {
     specialization: "",
     phone: "",
   });
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchTechnicians();
@@ -46,7 +48,7 @@ export const TechnicianList: React.FC = () => {
       if (error) throw error;
       setTechnicians(data || []);
     } catch {
-      toast.error("Failed to fetch technicians");
+      toast.error(t("technicians.failedToFetch"));
     } finally {
       setLoading(false);
     }
@@ -63,12 +65,12 @@ export const TechnicianList: React.FC = () => {
           .eq("id", editingTechnician.id);
 
         if (error) throw error;
-        toast.success("Technician updated successfully");
+        toast.success(t("technicians.updatedSuccessfully"));
       } else {
         const { error } = await supabase.from("technicians").insert([formData]);
 
         if (error) throw error;
-        toast.success("Technician created successfully");
+        toast.success(t("technicians.createdSuccessfully"));
       }
 
       setShowForm(false);
@@ -76,7 +78,7 @@ export const TechnicianList: React.FC = () => {
       resetForm();
       fetchTechnicians();
     } catch {
-      toast.error("Failed to save technician");
+      toast.error(t("technicians.failedToSave"));
     }
   };
 
@@ -92,7 +94,7 @@ export const TechnicianList: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this technician?")) return;
+    if (!confirm(t("technicians.deleteConfirm"))) return;
 
     try {
       const { error } = await supabase
@@ -101,10 +103,10 @@ export const TechnicianList: React.FC = () => {
         .eq("id", id);
 
       if (error) throw error;
-      toast.success("Technician deleted successfully");
+      toast.success(t("technicians.deletedSuccessfully"));
       fetchTechnicians();
     } catch {
-      toast.error("Failed to delete technician");
+      toast.error(t("technicians.failedToDelete"));
     }
   };
 
@@ -118,7 +120,7 @@ export const TechnicianList: React.FC = () => {
   };
 
   const filteredTechnicians = technicians.filter(
-    (technician) =>
+    technician =>
       technician.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       technician.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       technician.specialization
@@ -137,10 +139,12 @@ export const TechnicianList: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Technicians</h2>
+        <h2 className="text-2xl font-bold text-gray-900">
+          {t("technicians.title")}
+        </h2>
         <Button onClick={() => setShowForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Technician
+          {t("technicians.newTechnician")}
         </Button>
       </div>
 
@@ -148,9 +152,9 @@ export const TechnicianList: React.FC = () => {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
           type="text"
-          placeholder="Search technicians..."
+          placeholder={t("technicians.searchPlaceholder")}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={e => setSearchTerm(e.target.value)}
           className="pl-10"
         />
       </div>
@@ -159,43 +163,47 @@ export const TechnicianList: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
-              {editingTechnician ? "Edit Technician" : "New Technician"}
+              {editingTechnician
+                ? t("technicians.editTechnician")
+                : t("technicians.newTechnician")}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
-                placeholder="Full Name"
+                placeholder={t("technicians.fullName")}
                 value={formData.name}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
               />
               <Input
                 type="email"
-                placeholder="Email"
+                placeholder={t("technicians.email")}
                 value={formData.email}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, email: e.target.value })
                 }
                 required
               />
               <Input
-                placeholder="Specialization"
+                placeholder={t("technicians.specialization")}
                 value={formData.specialization}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, specialization: e.target.value })
                 }
               />
               <Input
-                placeholder="Phone"
+                placeholder={t("technicians.phone")}
                 value={formData.phone}
-                onChange={(e) =>
+                onChange={e =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
               />
               <div className="flex space-x-2">
                 <Button type="submit" className="flex-1">
-                  {editingTechnician ? "Update" : "Create"}
+                  {editingTechnician
+                    ? t("technicians.update")
+                    : t("technicians.create")}
                 </Button>
                 <Button
                   type="button"
@@ -207,7 +215,7 @@ export const TechnicianList: React.FC = () => {
                   variant="outline"
                   className="flex-1"
                 >
-                  Cancel
+                  {t("technicians.cancel")}
                 </Button>
               </div>
             </form>
@@ -218,11 +226,13 @@ export const TechnicianList: React.FC = () => {
       {filteredTechnicians.length === 0 ? (
         <div className="text-center py-12">
           <Wrench className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2 text-gray-500 text-lg">No technicians found</p>
+          <p className="mt-2 text-gray-500 text-lg">
+            {t("technicians.noTechniciansFound")}
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredTechnicians.map((technician) => (
+          {filteredTechnicians.map(technician => (
             <div
               key={technician.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
@@ -260,13 +270,13 @@ export const TechnicianList: React.FC = () => {
                     <div className="flex items-center">
                       <Star className="h-4 w-4 text-yellow-400 mr-1" />
                       <span className="text-xs text-gray-500">
-                        Available for assignments
+                        {t("technicians.availableForAssignments")}
                       </span>
                     </div>
                     <div className="flex items-center bg-blue-100 px-2 py-1 rounded-full">
                       <Wrench className="h-3 w-3 text-blue-600 mr-1" />
                       <span className="text-xs font-medium text-blue-700">
-                        {technician.job_count} jobs
+                        {technician.job_count} {t("technicians.jobs")}
                       </span>
                     </div>
                   </div>

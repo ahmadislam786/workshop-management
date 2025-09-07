@@ -14,7 +14,10 @@ export const useTeams = () => {
       setError(null);
 
       // Test if teams table exists
-      const { error: tableError } = await supabase.from("teams").select("id").limit(1);
+      const { error: tableError } = await supabase
+        .from("teams")
+        .select("id")
+        .limit(1);
       if (tableError) {
         setError(`Teams table not found: ${tableError.message}`);
         return;
@@ -42,7 +45,8 @@ export const useTeams = () => {
 
     const handleRefresh = () => fetchTeams();
     window.addEventListener("refresh-dashboard-data", handleRefresh);
-    return () => window.removeEventListener("refresh-dashboard-data", handleRefresh);
+    return () =>
+      window.removeEventListener("refresh-dashboard-data", handleRefresh);
   }, []);
 
   return { teams, loading, error, refetch: fetchTeams };

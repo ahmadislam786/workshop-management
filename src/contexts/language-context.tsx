@@ -115,8 +115,9 @@ const translations = {
     "actions.systemSettings": "System Settings",
 
     // Plantafel
-    "plantafel.orderInbox": "Auftragseingang",
-    "plantafel.searchInbox": "Suche im Eingang…",
+    "plantafel.orderInbox": "Order Inbox",
+    "plantafel.searchInbox": "Search in inbox...",
+    "plantafel.categoryExample": "e.g. Electrical",
     "plantafel.unassigned": "Unassigned",
 
     // Calendar and Time
@@ -203,6 +204,83 @@ const translations = {
     "login.passwordPlaceholder": "Enter your password",
     "login.signingIn": "Signing In...",
     "login.signIn": "Sign In",
+
+    // Technicians
+    "technicians.title": "Technicians",
+    "technicians.newTechnician": "New Technician",
+    "technicians.searchPlaceholder": "Search technicians...",
+    "technicians.editTechnician": "Edit Technician",
+    "technicians.fullName": "Full Name",
+    "technicians.email": "Email",
+    "technicians.specialization": "Specialization",
+    "technicians.phone": "Phone",
+    "technicians.update": "Update",
+    "technicians.create": "Create",
+    "technicians.cancel": "Cancel",
+    "technicians.noTechniciansFound": "No technicians found",
+    "technicians.availableForAssignments": "Available for assignments",
+    "technicians.jobs": "jobs",
+    "technicians.deleteConfirm":
+      "Are you sure you want to delete this technician?",
+    "technicians.updatedSuccessfully": "Technician updated successfully",
+    "technicians.createdSuccessfully": "Technician created successfully",
+    "technicians.deletedSuccessfully": "Technician deleted successfully",
+    "technicians.failedToSave": "Failed to save technician",
+    "technicians.failedToDelete": "Failed to delete technician",
+    "technicians.failedToFetch": "Failed to fetch technicians",
+
+    // Skills Manager
+    "technicians.skillsManager": "Skills Manager",
+    "technicians.skillsManagerDesc":
+      "Manage technician skills and specializations",
+    "technicians.skills": "Skills",
+    "technicians.searchSkills": "Search skills...",
+    "technicians.allCategories": "All Categories",
+    "technicians.availableSkills": "Available Skills",
+    "technicians.manage": "Manage",
+    "technicians.more": "more",
+    "technicians.specializations": "Specializations",
+    "technicians.categories": "categories",
+    "technicians.tryDifferentSearch": "Try a different search term",
+
+    // Jobs
+    "jobs.myJobs": "My Jobs",
+    "jobs.allJobs": "All Jobs",
+    "jobs.newJob": "New Job",
+    "jobs.view": "View",
+    "jobs.regular": "Regular",
+    "jobs.compact": "Compact",
+    "jobs.detailed": "Detailed",
+    "jobs.status": "Status",
+    "jobs.all": "All",
+    "jobs.pending": "Pending",
+    "jobs.scheduled": "Scheduled",
+    "jobs.inProgress": "In Progress",
+    "jobs.completed": "Completed",
+    "jobs.cancelled": "Cancelled",
+    "jobs.sortBy": "Sort by",
+    "jobs.newest": "Newest",
+    "jobs.oldest": "Oldest",
+    "jobs.scheduledStart": "Scheduled start",
+    "jobs.noJobsFound": "No jobs found",
+    "jobs.noAssignedJobs": "You don't have any assigned jobs yet",
+    "jobs.createFirstJob": "Get started by creating your first job",
+
+    // Skill-based Job Assignment
+    "jobs.skillBasedAssignment": "Skill-Based Job Assignment",
+    "jobs.skillBasedAssignmentDesc":
+      "Intelligently match jobs to technicians based on their skills",
+    "jobs.availableJobs": "Available Jobs",
+    "jobs.searchJobs": "Search jobs...",
+    "jobs.requiredSkills": "Required Skills",
+    "jobs.recommendedTechnicians": "Recommended Technicians",
+    "jobs.skills": "skills",
+    "jobs.assign": "Assign",
+    "jobs.skillMatch": "Skill Match",
+    "jobs.perfectMatch": "Perfect Match",
+    "jobs.goodMatch": "Good Match",
+    "jobs.partialMatch": "Partial Match",
+    "jobs.noMatch": "No Match",
   },
   de: {
     // Navigation
@@ -309,6 +387,7 @@ const translations = {
     // Plantafel
     "plantafel.orderInbox": "Auftragseingang",
     "plantafel.searchInbox": "Suche im Eingang…",
+    "plantafel.categoryExample": "z.B. Elektrik",
     "plantafel.unassigned": "Nicht zugewiesen",
 
     // Calendar and Time
@@ -395,6 +474,83 @@ const translations = {
     "login.passwordPlaceholder": "Passwort eingeben",
     "login.signingIn": "Anmelden...",
     "login.signIn": "Anmelden",
+
+    // Technicians
+    "technicians.title": "Techniker",
+    "technicians.newTechnician": "Neuer Techniker",
+    "technicians.searchPlaceholder": "Techniker suchen...",
+    "technicians.editTechnician": "Techniker bearbeiten",
+    "technicians.fullName": "Vollständiger Name",
+    "technicians.email": "E-Mail",
+    "technicians.specialization": "Spezialisierung",
+    "technicians.phone": "Telefon",
+    "technicians.update": "Aktualisieren",
+    "technicians.create": "Erstellen",
+    "technicians.cancel": "Abbrechen",
+    "technicians.noTechniciansFound": "Keine Techniker gefunden",
+    "technicians.availableForAssignments": "Verfügbar für Aufträge",
+    "technicians.jobs": "Aufträge",
+    "technicians.deleteConfirm":
+      "Sind Sie sicher, dass Sie diesen Techniker löschen möchten?",
+    "technicians.updatedSuccessfully": "Techniker erfolgreich aktualisiert",
+    "technicians.createdSuccessfully": "Techniker erfolgreich erstellt",
+    "technicians.deletedSuccessfully": "Techniker erfolgreich gelöscht",
+    "technicians.failedToSave": "Fehler beim Speichern des Technikers",
+    "technicians.failedToDelete": "Fehler beim Löschen des Technikers",
+    "technicians.failedToFetch": "Fehler beim Laden der Techniker",
+
+    // Skills Manager
+    "technicians.skillsManager": "Fähigkeiten-Manager",
+    "technicians.skillsManagerDesc":
+      "Techniker-Fähigkeiten und Spezialisierungen verwalten",
+    "technicians.skills": "Fähigkeiten",
+    "technicians.searchSkills": "Fähigkeiten suchen...",
+    "technicians.allCategories": "Alle Kategorien",
+    "technicians.availableSkills": "Verfügbare Fähigkeiten",
+    "technicians.manage": "Verwalten",
+    "technicians.more": "weitere",
+    "technicians.specializations": "Spezialisierungen",
+    "technicians.categories": "Kategorien",
+    "technicians.tryDifferentSearch": "Versuchen Sie einen anderen Suchbegriff",
+
+    // Jobs
+    "jobs.myJobs": "Meine Aufträge",
+    "jobs.allJobs": "Alle Aufträge",
+    "jobs.newJob": "Neuer Auftrag",
+    "jobs.view": "Ansicht",
+    "jobs.regular": "Regulär",
+    "jobs.compact": "Kompakt",
+    "jobs.detailed": "Detailliert",
+    "jobs.status": "Status",
+    "jobs.all": "Alle",
+    "jobs.pending": "Ausstehend",
+    "jobs.scheduled": "Geplant",
+    "jobs.inProgress": "In Bearbeitung",
+    "jobs.completed": "Abgeschlossen",
+    "jobs.cancelled": "Storniert",
+    "jobs.sortBy": "Sortieren nach",
+    "jobs.newest": "Neueste",
+    "jobs.oldest": "Älteste",
+    "jobs.scheduledStart": "Geplanter Start",
+    "jobs.noJobsFound": "Keine Aufträge gefunden",
+    "jobs.noAssignedJobs": "Sie haben noch keine zugewiesenen Aufträge",
+    "jobs.createFirstJob": "Erstellen Sie Ihren ersten Auftrag",
+
+    // Skill-based Job Assignment
+    "jobs.skillBasedAssignment": "Fähigkeitsbasierte Auftragszuweisung",
+    "jobs.skillBasedAssignmentDesc":
+      "Intelligente Zuordnung von Aufträgen zu Technikern basierend auf ihren Fähigkeiten",
+    "jobs.availableJobs": "Verfügbare Aufträge",
+    "jobs.searchJobs": "Aufträge suchen...",
+    "jobs.requiredSkills": "Erforderliche Fähigkeiten",
+    "jobs.recommendedTechnicians": "Empfohlene Techniker",
+    "jobs.skills": "Fähigkeiten",
+    "jobs.assign": "Zuweisen",
+    "jobs.skillMatch": "Fähigkeitsübereinstimmung",
+    "jobs.perfectMatch": "Perfekte Übereinstimmung",
+    "jobs.goodMatch": "Gute Übereinstimmung",
+    "jobs.partialMatch": "Teilweise Übereinstimmung",
+    "jobs.noMatch": "Keine Übereinstimmung",
   },
 };
 

@@ -18,7 +18,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   ...props
 }) => {
   const baseClasses = "bg-gray-200 rounded";
-  
+
   const variantClasses = {
     text: "h-4 w-full",
     rectangular: "w-full",
@@ -32,8 +32,16 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   };
 
   const customStyle = {
-    width: width ? (typeof width === "number" ? `${width}px` : width) : undefined,
-    height: height ? (typeof height === "number" ? `${height}px` : height) : undefined,
+    width: width
+      ? typeof width === "number"
+        ? `${width}px`
+        : width
+      : undefined,
+    height: height
+      ? typeof height === "number"
+        ? `${height}px`
+        : height
+      : undefined,
     ...style,
   };
 
@@ -52,8 +60,12 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 };
 
 // Pre-built skeleton components for common use cases
-export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn("bg-white rounded-xl border border-gray-200 p-6", className)}>
+export const SkeletonCard: React.FC<{ className?: string }> = ({
+  className,
+}) => (
+  <div
+    className={cn("bg-white rounded-xl border border-gray-200 p-6", className)}
+  >
     <div className="flex items-center justify-between mb-4">
       <Skeleton variant="circular" width={48} height={48} />
       <Skeleton variant="text" width={60} height={16} />
@@ -64,9 +76,9 @@ export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) =>
   </div>
 );
 
-export const SkeletonTable: React.FC<{ rows?: number; className?: string }> = ({ 
-  rows = 5, 
-  className 
+export const SkeletonTable: React.FC<{ rows?: number; className?: string }> = ({
+  rows = 5,
+  className,
 }) => (
   <div className={cn("space-y-4", className)}>
     {/* Header */}
@@ -76,7 +88,7 @@ export const SkeletonTable: React.FC<{ rows?: number; className?: string }> = ({
       <Skeleton variant="text" height={20} />
       <Skeleton variant="text" height={20} />
     </div>
-    
+
     {/* Rows */}
     {Array.from({ length: rows }).map((_, index) => (
       <div key={index} className="grid grid-cols-4 gap-4">
@@ -89,9 +101,9 @@ export const SkeletonTable: React.FC<{ rows?: number; className?: string }> = ({
   </div>
 );
 
-export const SkeletonList: React.FC<{ items?: number; className?: string }> = ({ 
-  items = 3, 
-  className 
+export const SkeletonList: React.FC<{ items?: number; className?: string }> = ({
+  items = 3,
+  className,
 }) => (
   <div className={cn("space-y-3", className)}>
     {Array.from({ length: items }).map((_, index) => (
