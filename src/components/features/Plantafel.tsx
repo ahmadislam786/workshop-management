@@ -1,28 +1,39 @@
 import React, { useMemo, useState } from "react";
 import { useJobs } from "@/hooks/useJobs";
 import { useTechnicians } from "@/hooks/useTechnicians";
-import { useTeams } from "@/hooks/useTeams";
+import { useSkillGroups } from "@/hooks/useSkillGroups";
 import { useLanguage } from "@/contexts/language-context";
 import type { Job } from "@/types";
 
 export const Plantafel: React.FC = () => {
   const { jobs, updateJob } = useJobs();
   const { technicians } = useTechnicians();
-  const { teams } = useTeams();
+  const { data: skillGroups } = useSkillGroups();
   const { t } = useLanguage();
-  const [team, setTeam] = useState<string>("all");
+  const [group, setGroup] = useState<string>("all");
   const [category, setCategory] = useState<string>("all");
   const [inboxQuery, setInboxQuery] = useState("");
 
   const filtered = useMemo(() => {
+    const mapServiceToGroup = (service?: string) => {
+      const s = (service || "").toLowerCase();
+      if (s.includes("brake") || s.includes("suspension")) return "mechanical";
+      if (s.includes("timing")) return "engine";
+      if (s.includes("glass") || s.includes("body")) return "body";
+      if (s.includes("tire") || s.includes("tyre")) return "tires";
+      if (s.includes("inspection")) return "safety";
+      return "diagnostics";
+    };
+
     return jobs.filter(j => {
-      const teamOk = team === "all" || j.team_id === team;
+      const groupOk =
+        group === "all" || mapServiceToGroup(j.service_type) === group;
       const catOk =
         category === "all" ||
         j.service_type.toLowerCase().includes(category.toLowerCase());
-      return teamOk && catOk;
+      return groupOk && catOk;
     });
-  }, [jobs, team, category]);
+  }, [jobs, group, category]);
 
   const statuses: Job["status"][] = [
     "pending",
@@ -48,16 +59,16 @@ export const Plantafel: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <label className="text-sm">Team</label>
+        <label className="text-sm">Group</label>
         <select
           className="border rounded-md px-2 py-1 text-sm"
-          value={team}
-          onChange={e => setTeam(e.target.value)}
+          value={group}
+          onChange={e => setGroup(e.target.value)}
         >
           <option value="all">All</option>
-          {teams.map(t => (
-            <option key={t.id} value={t.id}>
-              {t.name}
+          {(skillGroups ?? []).map(g => (
+            <option key={g.group_name} value={g.group_name}>
+              {g.group_name}
             </option>
           ))}
         </select>

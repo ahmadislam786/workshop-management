@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { useJobs } from "@/hooks/useJobs";
-import { useTeams } from "@/hooks/useTeams";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { SearchFilter } from "@/components/ui/SearchFilter";
@@ -17,7 +16,7 @@ import {
 } from "lucide-react";
 
 interface JobGroup {
-  team: string;
+  group: string;
   jobs: any[];
   total: number;
   inProgress: number;
@@ -27,21 +26,36 @@ interface JobGroup {
 
 export const Leitstand: React.FC = () => {
   const { jobs, loading, refetch } = useJobs();
-  const { teams } = useTeams();
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState("");
+  const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
-  // Group jobs by team
+  const mapServiceToGroup = (service?: string) => {
+    const s = (service || "").toLowerCase();
+    if (s.includes("brake") || s.includes("suspension")) return "mechanical";
+    if (s.includes("timing")) return "engine";
+    if (s.includes("glass") || s.includes("body")) return "body";
+    if (s.includes("tire") || s.includes("tyre")) return "tires";
+    if (s.includes("inspection")) return "safety";
+    return "diagnostics";
+  };
+
+  // Group jobs by skill group
   const jobGroups = useMemo(() => {
     const groups: Record<string, JobGroup> = {};
-
-    // Create groups for each team
-    teams.forEach(team => {
-      groups[team.id] = {
-        team: team.name,
+    const knownGroups = [
+      "engine",
+      "mechanical",
+      "body",
+      "tires",
+      "safety",
+      "diagnostics",
+    ];
+    knownGroups.forEach(g => {
+      groups[g] = {
+        group: g,
         jobs: [],
         total: 0,
         inProgress: 0,
@@ -50,22 +64,11 @@ export const Leitstand: React.FC = () => {
       };
     });
 
-    // Add unassigned group
-    groups["unassigned"] = {
-      team: "Unassigned",
-      jobs: [],
-      total: 0,
-      inProgress: 0,
-      completed: 0,
-      pending: 0,
-    };
-
     jobs.forEach(job => {
-      const teamId = job.team_id || "unassigned";
-
-      if (!groups[teamId]) {
-        groups[teamId] = {
-          team: "Unassigned",
+      const groupName = mapServiceToGroup(job.service_type);
+      if (!groups[groupName]) {
+        groups[groupName] = {
+          group: groupName,
           jobs: [],
           total: 0,
           inProgress: 0,
@@ -74,30 +77,30 @@ export const Leitstand: React.FC = () => {
         };
       }
 
-      groups[teamId].jobs.push(job);
-      groups[teamId].total++;
+      groups[groupName].jobs.push(job);
+      groups[groupName].total++;
 
       switch (job.status) {
         case "in_progress":
-          groups[teamId].inProgress++;
+          groups[groupName].inProgress++;
           break;
         case "completed":
-          groups[teamId].completed++;
+          groups[groupName].completed++;
           break;
         case "pending":
-          groups[teamId].pending++;
+          groups[groupName].pending++;
           break;
       }
     });
 
     return Object.values(groups);
-  }, [jobs, teams]);
+  }, [jobs]);
 
   // Filter groups based on search and filters
   const filteredGroups = useMemo(() => {
     return jobGroups.filter(group => {
-      // Team filter
-      if (selectedTeam && group.team !== selectedTeam) return false;
+      // Group filter
+      if (selectedGroup && group.group !== selectedGroup) return false;
 
       // Status filter
       if (selectedStatus) {
@@ -120,7 +123,7 @@ export const Leitstand: React.FC = () => {
 
       return true;
     });
-  }, [jobGroups, searchTerm, selectedTeam, selectedStatus]);
+  }, [jobGroups, searchTerm, selectedGroup, selectedStatus]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -203,14 +206,14 @@ export const Leitstand: React.FC = () => {
           placeholder="Search jobs, customers, or vehicles..."
           filters={{
             team: {
-              label: "Team",
+              label: "Group",
               options: jobGroups.map(group => ({
-                value: group.team,
-                label: group.team,
+                value: group.group,
+                label: group.group,
                 count: group.total,
               })),
-              value: selectedTeam,
-              onChange: setSelectedTeam,
+              value: selectedGroup,
+              onChange: setSelectedGroup,
             },
             status: {
               label: "Status",
@@ -226,27 +229,27 @@ export const Leitstand: React.FC = () => {
         />
       </div>
 
-      {/* Team Cards */}
+      {/* Group Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredGroups.map(group => (
           <div
-            key={group.team}
+            key={group.group}
             className="bg-white rounded-lg border border-gray-200 shadow-sm"
           >
-            {/* Team Header */}
+            {/* Group Header */}
             <div
               className={`p-4 rounded-t-lg text-white ${getTeamColor(
-                group.team
+                group.group
               )}`}
             >
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg">{group.team}</h3>
+                <h3 className="font-semibold text-lg">{group.group}</h3>
                 <span className="bg-white bg-opacity-20 px-2 py-1 rounded-full text-sm">
                   {group.total}
                 </span>
               </div>
 
-              {/* Team Stats */}
+              {/* Group Stats */}
               <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
                 <div className="text-center">
                   <div className="font-medium">{group.pending}</div>

@@ -742,6 +742,113 @@ FROM job_details_view
 ORDER BY created_at;
 
 -- =============================================
+-- SKILL-BASED GROUPING (NO RIGID TEAMS)
+-- =============================================
+
+-- 1) Each technician appears in every category they cover
+CREATE OR REPLACE VIEW technician_skill_groups AS
+WITH tech_cat AS (
+  SELECT
+    t.id          AS technician_id,
+    t.name        AS technician_name,
+    t.email       AS technician_email,
+    s.category    AS group_name
+  FROM technicians t
+  JOIN technician_skills ts ON ts.technician_id = t.id
+  JOIN skills s            ON s.id = ts.skill_id
+)
+SELECT DISTINCT technician_id, technician_name, technician_email, group_name
+FROM tech_cat;
+
+-- 2) Normalize job service types to a primary skill and map to a category
+CREATE OR REPLACE VIEW job_primary_skill AS
+SELECT
+  j.id,
+  j.status,
+  j.created_at,
+  j.service_type,
+  CASE
+    WHEN j.service_type ILIKE '%brake%'        THEN 'brakes'
+    WHEN j.service_type ILIKE '%timing%'       THEN 'timing belt'
+    WHEN j.service_type ILIKE '%suspension%'   THEN 'suspension'
+    WHEN j.service_type ILIKE '%glass%'        THEN 'glass'
+    WHEN j.service_type ILIKE '%tire%' OR j.service_type ILIKE '%tyre%' THEN 'tyres'
+    WHEN j.service_type ILIKE '%inspection%'   THEN 'inspection'
+    WHEN j.service_type ILIKE '%body%'         THEN 'body work'
+    ELSE 'failure search'
+  END AS primary_skill
+FROM jobs j;
+
+CREATE OR REPLACE VIEW job_skill_category AS
+SELECT
+  jps.id            AS job_id,
+  jps.status,
+  jps.primary_skill,
+  CASE
+    WHEN jps.primary_skill IN ('brakes','suspension')       THEN 'mechanical'
+    WHEN jps.primary_skill = 'timing belt'                  THEN 'engine'
+    WHEN jps.primary_skill IN ('glass','body work')         THEN 'body'
+    WHEN jps.primary_skill = 'tyres'                        THEN 'tires'
+    WHEN jps.primary_skill = 'inspection'                   THEN 'safety'
+    WHEN jps.primary_skill = 'failure search'               THEN 'diagnostics'
+    ELSE 'mechanical'
+  END AS group_name
+FROM job_primary_skill jps;
+
+-- 3) Control Board stats per skill group
+CREATE OR REPLACE VIEW skill_group_stats AS
+WITH techs AS (
+  SELECT group_name, array_agg(DISTINCT technician_id)  AS technician_ids,
+         array_agg(DISTINCT technician_name)            AS technician_names
+  FROM technician_skill_groups
+  GROUP BY group_name
+),
+job_counts AS (
+  SELECT
+    jsc.group_name,
+    COUNT(*) FILTER (WHERE status = 'pending')      AS pending,
+    COUNT(*) FILTER (WHERE status = 'in_progress')  AS active,
+    COUNT(*) FILTER (WHERE status = 'completed')    AS done
+  FROM job_skill_category jsc
+  GROUP BY jsc.group_name
+)
+SELECT
+  t.group_name,
+  COALESCE(j.pending, 0) AS pending,
+  COALESCE(j.active, 0)  AS active,
+  COALESCE(j.done, 0)    AS done,
+  t.technician_ids,
+  t.technician_names
+FROM techs t
+LEFT JOIN job_counts j ON j.group_name = t.group_name
+UNION
+SELECT
+  j.group_name, j.pending, j.active, j.done,
+  ARRAY[]::uuid[] AS technician_ids,
+  ARRAY[]::text[] AS technician_names
+FROM job_counts j
+LEFT JOIN techs t ON t.group_name = j.group_name
+WHERE t.group_name IS NULL;
+
+-- 4) API function for frontend
+CREATE OR REPLACE FUNCTION get_skill_groups_with_stats()
+RETURNS TABLE (
+  group_name text,
+  pending int,
+  active int,
+  done int,
+  technician_ids uuid[],
+  technician_names text[]
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT group_name, pending, active, done, technician_ids, technician_names
+  FROM skill_group_stats
+  ORDER BY group_name;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+-- =============================================
 -- FINAL COMMENTS AND INSTRUCTIONS
 -- =============================================
 
