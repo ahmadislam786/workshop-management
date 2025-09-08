@@ -152,21 +152,15 @@ export const Layout: React.FC<LayoutProps> = ({
                   {activeTab === "dashboard" && t("page.dashboard")}
                   {activeTab === "leitstand" && t("nav.controlBoard")}
                   {activeTab === "plantafel" && t("nav.planningBoard")}
-                  {activeTab === "dialogannahme" && t("nav.damageReport")}
-                  {![
-                    "dashboard",
-                    "leitstand",
-                    "plantafel",
-                    "dialogannahme",
-                  ].includes(activeTab) && t(`nav.${activeTab}`)}
+                  {!["dashboard", "leitstand", "plantafel"].includes(
+                    activeTab
+                  ) && t(`nav.${activeTab}`)}
                 </h2>
                 <p className="text-gray-600 mt-1 text-sm sm:text-base">
                   {activeTab === "leitstand" && t("page.controlBoard.desc")}
                   {activeTab === "plantafel" && t("page.planningBoard.desc")}
-                  {activeTab === "dialogannahme" && t("page.damageReport.desc")}
-                  {!["leitstand", "plantafel", "dialogannahme"].includes(
-                    activeTab
-                  ) && t(`page.${activeTab}.desc`)}
+                  {!["leitstand", "plantafel"].includes(activeTab) &&
+                    t(`page.${activeTab}.desc`)}
                 </p>
               </div>
 

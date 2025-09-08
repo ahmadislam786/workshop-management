@@ -14,8 +14,14 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    loading,
+    isLive,
+  } = useNotifications();
   const { t } = useLanguage();
 
   const getNotificationIcon = (type: string) => {
@@ -65,6 +71,11 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
               <h2 className="text-lg font-semibold text-gray-900">
                 {t("user.notifications")}
               </h2>
+              {isLive && (
+                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
+                  LIVE
+                </span>
+              )}
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                   {unreadCount}

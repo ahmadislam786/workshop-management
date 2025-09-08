@@ -22,6 +22,7 @@ interface NotificationContextType {
     notification: Omit<Notification, "id" | "created_at" | "read">
   ) => void;
   loading: boolean;
+  isLive: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -34,6 +35,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
+  const [isLive, setIsLive] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
@@ -166,9 +168,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
             setNotifications(prev => prev.filter(n => n.id !== deleted.id));
           }
         )
-        .subscribe();
+        .subscribe(status => {
+          if (status === "SUBSCRIBED") setIsLive(true);
+        });
 
       return () => {
+        setIsLive(false);
         supabase.removeChannel(channel);
       };
     }
@@ -183,6 +188,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         markAllAsRead,
         addNotification,
         loading,
+        isLive,
       }}
     >
       {children}
