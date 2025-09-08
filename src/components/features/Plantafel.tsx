@@ -45,6 +45,7 @@ export const Plantafel: React.FC = () => {
 
   const onDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
     e.dataTransfer.setData("text/plain", id);
+    e.dataTransfer.effectAllowed = "move";
   };
 
   const onDrop =
@@ -92,8 +93,7 @@ export const Plantafel: React.FC = () => {
             const id = e.dataTransfer.getData("text/plain");
             if (id)
               await updateJob(id, {
-                assigned_employee_id: undefined,
-                team_id: undefined,
+                technician_id: null,
               });
           }}
         >
@@ -106,7 +106,7 @@ export const Plantafel: React.FC = () => {
           />
           <div className="space-y-2">
             {filtered
-              .filter(j => !j.assigned_employee_id)
+              .filter(j => !j.technician_id)
               .filter(j => {
                 if (!inboxQuery.trim()) return true;
                 const q = inboxQuery.toLowerCase();
@@ -150,15 +150,14 @@ export const Plantafel: React.FC = () => {
               const id = e.dataTransfer.getData("text/plain");
               if (id)
                 await updateJob(id, {
-                  assigned_employee_id: emp.id,
-                  team_id: emp.id,
+                  technician_id: emp.id,
                 });
             }}
           >
             <div className="font-semibold mb-2">{emp.name}</div>
             <div className="space-y-2">
               {filtered
-                .filter(j => j.assigned_employee_id === emp.id)
+                .filter(j => j.technician_id === emp.id)
                 .map(j => (
                   <div
                     key={j.id}

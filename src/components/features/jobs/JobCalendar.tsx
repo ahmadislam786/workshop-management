@@ -412,12 +412,14 @@ export const JobCalendar: React.FC = () => {
                       onDrop={e => handleSlotDrop(slot, e)}
                       onDragOver={handleSlotDragOver}
                     >
-                      {slot.job ? (
+                                            {slot.job ? (
                         <div
                           className={`p-2 rounded text-xs cursor-pointer border ${getStatusColor(
                             slot.job.status
                           )}`}
                           onClick={() => handleJobClick(slot.job!)}
+                          draggable
+                          onDragStart={e => handleJobDragStart(slot.job!, e)}
                         >
                           <div className="font-medium truncate">
                             {slot.job.service_type}
@@ -426,7 +428,7 @@ export const JobCalendar: React.FC = () => {
                             {slot.job.customer?.name}
                           </div>
                         </div>
-                      ) : (
+                      )  : (
                         <div className="text-xs text-gray-400 text-center pt-2">
                           Available
                         </div>

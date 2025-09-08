@@ -36,6 +36,7 @@ const translations = {
     "nav.damageReport.desc": "Damage report",
     "nav.myJobs": "My Jobs",
     "nav.myJobs.desc": "Your assigned jobs",
+    "nav.calendar": "Calendar",
 
     // App
     "app.title": "Workshop Manager",
@@ -63,6 +64,7 @@ const translations = {
     "page.controlBoard.desc": "Real-time workshop status",
     "page.planningBoard.desc": "Planning and scheduling",
     "page.damageReport.desc": "Damage report management",
+    "page.calendar.desc": "View and manage the workshop calendar",
 
     // Actions
     "action.refresh": "Refresh Data",
@@ -100,9 +102,8 @@ const translations = {
     "stats.pendingJobs": "Pending Jobs",
     "stats.awaitingStart": "Awaiting start",
     "stats.inProgress": "In Progress",
-    "stats.currentlyWorking": "Currently working",
     "stats.completed": "Completed",
-    "stats.successfullyFinished": "Successfully finished",
+    "stats.cancelled": "Cancelled",
     "stats.active": "Active",
     "stats.none": "None",
 
@@ -304,6 +305,7 @@ const translations = {
     "nav.damageReport.desc": "Schadensmeldung",
     "nav.myJobs": "Meine Aufträge",
     "nav.myJobs.desc": "Ihre zugewiesenen Aufträge",
+    "nav.calendar": "Kalender",
 
     // App
     "app.title": "Werkstatt Manager",
@@ -332,6 +334,7 @@ const translations = {
     "page.controlBoard.desc": "Echtzeit-Werkstattstatus",
     "page.planningBoard.desc": "Planung und Terminierung",
     "page.damageReport.desc": "Schadensmeldungsverwaltung",
+    "page.calendar.desc": "Werkstattkalender anzeigen und verwalten",
 
     // Actions
     "action.refresh": "Daten aktualisieren",
@@ -370,9 +373,8 @@ const translations = {
     "stats.pendingJobs": "Ausstehende Aufträge",
     "stats.awaitingStart": "Warten auf Start",
     "stats.inProgress": "In Bearbeitung",
-    "stats.currentlyWorking": "Aktuell in Arbeit",
     "stats.completed": "Abgeschlossen",
-    "stats.successfullyFinished": "Erfolgreich beendet",
+    "stats.cancelled": "Storniert",
     "stats.active": "Aktiv",
     "stats.none": "Keine",
 

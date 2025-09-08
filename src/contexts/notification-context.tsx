@@ -16,11 +16,11 @@ export interface Notification {
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   addNotification: (
-    notification: Omit<Notification, "id" | "created_at" | "read">
-  ) => void;
+    notification: Omit<Notification, "id" | "created_at" | "is_read" | "user_id">
+  ) => Promise<void>;
   loading: boolean;
   isLive: boolean;
 }
@@ -96,7 +96,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addNotification = async (
-    notification: Omit<Notification, "id" | "created_at" | "is_read">
+    notification: Omit<Notification, "id" | "created_at" | "is_read" | "user_id">
   ) => {
     if (!profile) return;
 

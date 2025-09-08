@@ -96,10 +96,10 @@ export const Input: React.FC<InputProps> = ({
           {...props}
         />
 
-        {/* Right icon with better positioning */}
+        {/* Right icon should be interactive (e.g., password toggle) */}
         {rightIcon && (
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-blue-600 transition-colors duration-200">
-            <div className="h-5 w-5">{rightIcon}</div>
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 group-focus-within:text-blue-600 transition-colors duration-200">
+            <div className="h-5 w-5 flex items-center">{rightIcon}</div>
           </div>
         )}
 
