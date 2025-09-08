@@ -4,14 +4,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 export interface Notification {
   id: string;
-  title: string;
   message: string;
   type: "info" | "success" | "warning" | "error";
-  read: boolean;
+  is_read: boolean;
   created_at: string;
   user_id: string;
-  action_url?: string;
-  action_text?: string;
+  action_link?: string;
+  action_label?: string;
 }
 
 interface NotificationContextType {
@@ -36,7 +35,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const fetchNotifications = async () => {
     if (!profile) return;
@@ -63,13 +62,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const { error } = await supabase
         .from("notifications")
-        .update({ read: true })
+        .update({ is_read: true })
         .eq("id", id);
 
       if (error) throw error;
 
       setNotifications(prev =>
-        prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        prev.map(n => (n.id === id ? { ...n, is_read: true } : n))
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
@@ -82,20 +81,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const { error } = await supabase
         .from("notifications")
-        .update({ read: true })
+        .update({ is_read: true })
         .eq("user_id", profile.id)
-        .eq("read", false);
+        .eq("is_read", false);
 
       if (error) throw error;
 
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
     }
   };
 
   const addNotification = async (
-    notification: Omit<Notification, "id" | "created_at" | "read">
+    notification: Omit<Notification, "id" | "created_at" | "is_read">
   ) => {
     if (!profile) return;
 
@@ -106,7 +105,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
           {
             ...notification,
             user_id: profile.id,
-            read: false,
+            is_read: false,
           },
         ])
         .select()
@@ -124,7 +123,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     if (profile) {
       fetchNotifications();
 
-      // Subscribe to real-time notifications
+      // Subscribe to real-time notifications: INSERT/UPDATE/DELETE
       const channel = supabase
         .channel("notifications-realtime")
         .on(
@@ -137,6 +136,34 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
           },
           payload => {
             setNotifications(prev => [payload.new as Notification, ...prev]);
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${profile.id}`,
+          },
+          payload => {
+            const updated = payload.new as Notification;
+            setNotifications(prev =>
+              prev.map(n => (n.id === updated.id ? { ...n, ...updated } : n))
+            );
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "DELETE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${profile.id}`,
+          },
+          payload => {
+            const deleted = payload.old as Notification;
+            setNotifications(prev => prev.filter(n => n.id !== deleted.id));
           }
         )
         .subscribe();

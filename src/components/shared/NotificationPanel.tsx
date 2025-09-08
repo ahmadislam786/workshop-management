@@ -115,7 +115,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     className={cn(
                       "p-4 border-l-4 transition-colors hover:bg-gray-50",
                       getNotificationColor(notification.type),
-                      !notification.read && "bg-white"
+                      !notification.is_read && "bg-white"
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -128,15 +128,15 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                           <h3
                             className={cn(
                               "text-sm font-medium",
-                              !notification.read
+                              !notification.is_read
                                 ? "text-gray-900"
                                 : "text-gray-600"
                             )}
                           >
-                            {notification.title}
+                            {notification.message}
                           </h3>
 
-                          {!notification.read && (
+                          {!notification.is_read && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -157,13 +157,13 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                             {new Date(notification.created_at).toLocaleString()}
                           </span>
 
-                          {notification.action_url && (
+                          {notification.action_link && (
                             <Button
                               variant="ghost"
                               size="sm"
                               className="text-blue-600 hover:text-blue-700 p-1"
                               onClick={() =>
-                                window.open(notification.action_url, "_blank")
+                                window.open(notification.action_link, "_blank")
                               }
                             >
                               <ExternalLink className="h-3 w-3" />

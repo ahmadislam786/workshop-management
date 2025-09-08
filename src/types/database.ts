@@ -193,70 +193,7 @@ export interface Database {
           created_at?: string;
         };
       };
-      damage_reports: {
-        Row: {
-          id: string;
-          job_id: string;
-          comment: string | null;
-          photo_url: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          job_id: string;
-          comment?: string | null;
-          photo_url?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          job_id?: string;
-          comment?: string | null;
-          photo_url?: string | null;
-          created_at?: string;
-        };
-      };
-      scans: {
-        Row: {
-          id: string;
-          vehicle_id: string;
-          customer_id: string;
-          technician_id: string | null;
-          device: string;
-          scan_type: string;
-          summary: string | null;
-          results: any | null;
-          status: "pending" | "completed" | "failed" | "cancelled";
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          vehicle_id: string;
-          customer_id: string;
-          technician_id?: string | null;
-          device: string;
-          scan_type?: string;
-          summary?: string | null;
-          results?: any | null;
-          status?: "pending" | "completed" | "failed" | "cancelled";
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          vehicle_id?: string;
-          customer_id?: string;
-          technician_id?: string | null;
-          device?: string;
-          scan_type?: string;
-          summary?: string | null;
-          results?: any | null;
-          status?: "pending" | "completed" | "failed" | "cancelled";
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
+      // Removed damage_reports and scans tables per product decision
       notifications: {
         Row: {
           id: string;

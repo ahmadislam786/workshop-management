@@ -104,29 +104,7 @@ CREATE TABLE IF NOT EXISTS technician_skills (
 -- ADDITIONAL FEATURE TABLES
 -- =============================================
 
--- Scans table - FIXED: Added missing id column
-CREATE TABLE IF NOT EXISTS scans (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY, -- FIXED: Added missing primary key
-  vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
-  customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-  technician_id UUID REFERENCES technicians(id) ON DELETE SET NULL,
-  device VARCHAR(100) NOT NULL,
-  scan_type VARCHAR(100),
-  summary TEXT,
-  results JSONB,
-  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Damage reports table
-CREATE TABLE IF NOT EXISTS damage_reports (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  job_id UUID NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-  comment TEXT,
-  photo_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- (Removed) scans and damage_reports tables per product decision
 
 -- Notifications table - FIXED: Changed to user_id to match app expectations
 CREATE TABLE notifications (
@@ -172,11 +150,6 @@ CREATE INDEX IF NOT EXISTS idx_technician_skills_technician_id ON technician_ski
 CREATE INDEX IF NOT EXISTS idx_technician_skills_skill_id ON technician_skills(skill_id);
 CREATE INDEX IF NOT EXISTS idx_technician_skills_proficiency ON technician_skills(proficiency_level);
 
--- Additional feature indexes
-CREATE INDEX IF NOT EXISTS idx_scans_vehicle_id ON scans(vehicle_id);
-CREATE INDEX IF NOT EXISTS idx_scans_technician_id ON scans(technician_id);
-CREATE INDEX IF NOT EXISTS idx_scans_status ON scans(status);
-CREATE INDEX IF NOT EXISTS idx_damage_reports_job_id ON damage_reports(job_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 
@@ -275,8 +248,8 @@ BEGIN
   )
   SELECT 
     sm.tech_id,
-    sm.tech_name,
-    sm.tech_email,
+    sm.tech_name::TEXT,
+    sm.tech_email::TEXT,
     sm.matched_skills_list,
     sm.matched_count::INTEGER,
     ts.total_count::INTEGER,
@@ -403,7 +376,7 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trigger_update_technician_job_count ON jobs;
 DROP TRIGGER IF EXISTS trigger_technicians_updated_at ON technicians;
 DROP TRIGGER IF EXISTS trigger_profile_updated_at ON profile;
-DROP TRIGGER IF EXISTS trigger_scans_updated_at ON scans;
+-- (Removed) scans updated_at trigger
 
 -- Trigger to update technician job count
 CREATE TRIGGER trigger_update_technician_job_count
@@ -422,10 +395,7 @@ CREATE TRIGGER trigger_profile_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER trigger_scans_updated_at
-  BEFORE UPDATE ON scans
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+-- (Removed) scans updated_at trigger creation
 
 -- =============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
@@ -439,8 +409,7 @@ ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE technician_skills ENABLE ROW LEVEL SECURITY;
-ALTER TABLE scans ENABLE ROW LEVEL SECURITY;
-ALTER TABLE damage_reports ENABLE ROW LEVEL SECURITY;
+-- (Removed) scans and damage_reports RLS enable
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 
@@ -459,10 +428,7 @@ DROP POLICY IF EXISTS "Anyone can view skills" ON skills;
 DROP POLICY IF EXISTS "Anyone can manage skills" ON skills;
 DROP POLICY IF EXISTS "Anyone can view technician skills" ON technician_skills;
 DROP POLICY IF EXISTS "Anyone can manage technician skills" ON technician_skills;
-DROP POLICY IF EXISTS "Anyone can view scans" ON scans;
-DROP POLICY IF EXISTS "Anyone can manage scans" ON scans;
-DROP POLICY IF EXISTS "Anyone can view damage reports" ON damage_reports;
-DROP POLICY IF EXISTS "Anyone can manage damage reports" ON damage_reports;
+-- (Removed) scans and damage_reports policies
 DROP POLICY IF EXISTS "Anyone can view notifications" ON notifications;
 DROP POLICY IF EXISTS "Anyone can manage notifications" ON notifications;
 DROP POLICY IF EXISTS "Anyone can view teams" ON teams;
@@ -520,19 +486,7 @@ CREATE POLICY "Anyone can view technician skills" ON technician_skills
 CREATE POLICY "Anyone can manage technician skills" ON technician_skills
   FOR ALL USING (true);
 
--- Scans policies
-CREATE POLICY "Anyone can view scans" ON scans
-  FOR SELECT USING (true);
-
-CREATE POLICY "Anyone can manage scans" ON scans
-  FOR ALL USING (true);
-
--- Damage reports policies
-CREATE POLICY "Anyone can view damage reports" ON damage_reports
-  FOR SELECT USING (true);
-
-CREATE POLICY "Anyone can manage damage reports" ON damage_reports
-  FOR ALL USING (true);
+-- (Removed) scans and damage_reports policies
 
 -- Notifications policies (simplified - no user constraints)
 CREATE POLICY "Anyone can view notifications" ON notifications
@@ -644,7 +598,7 @@ INSERT INTO customers (name, email, phone, status, created_at) VALUES
 ('Anna Fischer', 'anna.fischer@email.com', '+49 123 456 7893', 'active', NOW()),
 ('Thomas Wagner', 'thomas.wagner@email.com', '+49 123 456 7894', 'active', NOW())
 
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT DO NOTHING;
 
 -- Insert sample vehicles
 INSERT INTO vehicles (make, model, license_plate, year, customer_id, created_at) VALUES
@@ -666,36 +620,7 @@ INSERT INTO jobs (customer_id, vehicle_id, technician_id, service_type, status, 
 
 ON CONFLICT DO NOTHING;
 
--- Insert sample scans
-INSERT INTO scans (vehicle_id, customer_id, technician_id, device, scan_type, summary, status, created_at, updated_at) VALUES
-((SELECT id FROM vehicles WHERE license_plate = 'M-AB 123'), (SELECT id FROM customers WHERE email = 'hans.mueller@email.com'), (SELECT id FROM technicians WHERE name = 'Ahmad'), 'OBD-II Scanner', 'Engine Diagnostics', 'Engine light on - P0301 cylinder 1 misfire', 'completed', NOW() - INTERVAL '1 hour', NOW()),
-((SELECT id FROM vehicles WHERE license_plate = 'M-CD 456'), (SELECT id FROM customers WHERE email = 'maria.schmidt@email.com'), NULL, 'ABS Scanner', 'ABS Diagnostics', 'ABS warning light', 'pending', NOW(), NOW()),
-((SELECT id FROM vehicles WHERE license_plate = 'M-EF 789'), (SELECT id FROM customers WHERE email = 'peter.weber@email.com'), NULL, 'Airbag Scanner', 'Airbag Diagnostics', 'Airbag system check', 'pending', NOW(), NOW())
-
-ON CONFLICT DO NOTHING;
-
--- Insert sample damage reports (only if jobs exist and no damage reports exist yet)
-INSERT INTO damage_reports (job_id, comment, created_at) 
-SELECT 
-  j.id,
-  'Front bumper has minor scratches from previous accident',
-  NOW()
-FROM jobs j 
-WHERE j.service_type = 'Brake Service' 
-  AND j.notes = 'Front brake pads replacement'
-  AND NOT EXISTS (SELECT 1 FROM damage_reports dr WHERE dr.job_id = j.id)
-LIMIT 1;
-
-INSERT INTO damage_reports (job_id, comment, created_at) 
-SELECT 
-  j.id,
-  'Engine bay shows signs of oil leakage',
-  NOW()
-FROM jobs j 
-WHERE j.service_type = 'Timing Belt' 
-  AND j.notes = 'Timing belt replacement'
-  AND NOT EXISTS (SELECT 1 FROM damage_reports dr WHERE dr.job_id = j.id)
-LIMIT 1;
+-- (Removed) sample scans and damage_reports
 
 -- Insert sample notifications (using user_id to match app expectations)
 INSERT INTO notifications (user_id, message, type, is_read, created_at) VALUES

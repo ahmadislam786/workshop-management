@@ -16,7 +16,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
-  Search,
   Languages,
 } from "lucide-react";
 
@@ -107,13 +106,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       color: "text-indigo-600",
     },
     {
-      id: "scans",
-      label: t("nav.scans"),
-      icon: Search,
-      description: t("nav.scans.desc"),
-      color: "text-teal-600",
-    },
-    {
       id: "leitstand",
       label: t("nav.controlBoard"),
       icon: LayoutDashboard,
@@ -126,13 +118,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: LayoutDashboard,
       description: t("nav.planningBoard.desc"),
       color: "text-pink-600",
-    },
-    {
-      id: "dialogannahme",
-      label: t("nav.damageReport"),
-      icon: LayoutDashboard,
-      description: t("nav.damageReport.desc"),
-      color: "text-yellow-600",
     },
   ];
 

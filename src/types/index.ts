@@ -161,34 +161,7 @@ export interface UserCreationResult {
   error?: string;
 }
 
-// =====================================================
-// SCANS MODULE
-// =====================================================
-
-export interface ScanMeasurement {
-  name: string; // e.g. "Voltage", "Temperature"
-  value: string | number; // keep flexible for units formatting
-  unit?: string; // e.g. "V", "°C"
-  status?: "ok" | "warning" | "error"; // optional traffic-light state
-}
-
-export interface ScanRecord {
-  id: string;
-  created_at: string;
-  device: string; // scanner source
-  vehicle_id: string;
-  customer_id: string;
-  technician_id?: string;
-  scan_type: string;
-  summary?: string; // short description shown in list
-  results?: ScanMeasurement[] | Record<string, unknown> | null;
-  status: "pending" | "completed" | "failed" | "cancelled";
-  updated_at: string;
-  // Related data (populated by joins)
-  vehicle?: Vehicle;
-  customer?: Customer;
-  technician?: Technician;
-}
+// Removed scans module per product decision
 
 export interface Team {
   id: string;
@@ -199,12 +172,4 @@ export interface Team {
   created_at: string;
 }
 
-export interface DamageReport {
-  id: string;
-  job_id: string;
-  comment?: string;
-  photo_url?: string;
-  created_at: string;
-  // Related data
-  job?: Job;
-}
+// Removed DamageReport interface since the feature is deleted

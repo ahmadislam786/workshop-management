@@ -26,7 +26,7 @@ export const JobList: React.FC = () => {
   const myScope = useMemo(
     () =>
       profile?.role === "technician"
-        ? jobs.filter(j => j.technician_id === technician?.id)
+        ? jobs.filter(j => !j.technician_id || j.technician_id === technician?.id)
         : jobs,
     [jobs, profile?.role, technician?.id]
   );
