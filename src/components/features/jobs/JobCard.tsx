@@ -13,6 +13,7 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
+  CalendarX,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { JobForm } from "./JobForm";
@@ -32,9 +33,23 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
   const { updateJob } = useJobs();
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [showPostponeConfirm, setShowPostponeConfirm] = useState(false);
 
   const handleStatusUpdate = (newStatus: Job["status"]) => {
     updateJob(job.id, { status: newStatus });
+  };
+
+  const handlePostpone = async () => {
+    try {
+      await updateJob(job.id, {
+        status: "pending",
+        scheduled_start: null,
+        scheduled_end: null,
+      });
+      setShowPostponeConfirm(false);
+    } catch (error) {
+      console.error("Failed to postpone job:", error);
+    }
   };
 
   const handleEdit = () => {
@@ -136,7 +151,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
                     : "bg-gray-100 text-gray-800"
                 }`}
               >
-                {job.source === "email" ? "📧 Email" : "✋ Manual"}
+                {job.source === "email" ? "�� Email" : "✋ Manual"}
               </span>
             </div>
           </div>
@@ -145,14 +160,24 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
             {profile?.role === "technician" ? (
               <div className="flex space-x-2">
                 {job.status === "scheduled" && (
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => handleStatusUpdate("in_progress")}
-                    leftIcon={<TrendingUp className="h-3 w-3" />}
-                  >
-                    Start Work
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => handleStatusUpdate("in_progress")}
+                      leftIcon={<TrendingUp className="h-3 w-3" />}
+                    >
+                      Start Work
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowPostponeConfirm(true)}
+                      leftIcon={<CalendarX className="h-3 w-3" />}
+                    >
+                      Postpone
+                    </Button>
+                  </>
                 )}
                 {job.status === "in_progress" && (
                   <Button
@@ -190,6 +215,16 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
               </div>
             ) : (
               <div className="flex space-x-2">
+                {job.status === "scheduled" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowPostponeConfirm(true)}
+                    leftIcon={<CalendarX className="h-3 w-3" />}
+                  >
+                    Postpone
+                  </Button>
+                )}
                 <Button size="sm" variant="secondary" onClick={handleEdit}>
                   <Edit className="h-3 w-3 mr-1" />
                   Edit
@@ -199,6 +234,46 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
           </div>
         </div>
       </div>
+
+      {/* Postpone Confirmation Modal */}
+      {showPostponeConfirm && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setShowPostponeConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center mb-4">
+              <CalendarX className="h-6 w-6 text-orange-500 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Postpone Job
+              </h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to postpone this job? It will be moved back to pending status and its schedule will be cleared.
+            </p>
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowPostponeConfirm(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handlePostpone}
+                className="flex-1"
+                leftIcon={<CalendarX className="h-4 w-4" />}
+              >
+                Postpone Job
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Form Modal */}
       {showEditForm && <JobForm job={job} onClose={handleEditClose} />}
