@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useJobs } from "@/hooks/useJobs";
+import { useTechnicians } from "@/hooks/useTechnicians";
 import { Button } from "@/components/ui/Button";
 import {
   ChevronLeft,
@@ -9,6 +10,7 @@ import {
   Car,
   Clock,
   Wrench,
+  Users,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import type { Job } from "../../../types";
@@ -28,9 +30,12 @@ interface OpenJobPoolProps {
 }
 
 const OpenJobPool: React.FC<OpenJobPoolProps> = ({ jobs, onJobDragStart }) => {
-  const openJobs = jobs.filter(
-    job => job.status === "pending" && !job.technician_id
-  );
+  const openJobs = jobs
+    .filter(job => job.status === "pending" && !job.technician_id)
+    .sort((a, b) => {
+      // Sort by created_at descending (most recent first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
 
   if (openJobs.length === 0) {
     return (
@@ -78,12 +83,14 @@ const OpenJobPool: React.FC<OpenJobPoolProps> = ({ jobs, onJobDragStart }) => {
 
 export const JobCalendar: React.FC = () => {
   const { jobs, updateJob } = useJobs();
+  const { technicians } = useTechnicians();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showJobModal, setShowJobModal] = useState(false);
   const [viewMode, setViewMode] = useState<"month" | "week" | "day">("week");
   const [draggedJob, setDraggedJob] = useState<Job | null>(null);
+  const [showDailyPool, setShowDailyPool] = useState(false);
 
   // Generate calendar slots for the current week
   const generateWeekSlots = useCallback(
@@ -156,6 +163,19 @@ export const JobCalendar: React.FC = () => {
     setDraggedJob(job);
     event.dataTransfer.setData("text/plain", job.id);
     event.dataTransfer.effectAllowed = "move";
+    
+    // Add visual feedback
+    if (event.currentTarget instanceof HTMLElement) {
+      event.currentTarget.style.opacity = "0.5";
+    }
+  };
+
+  const handleJobDragEnd = (event: React.DragEvent) => {
+    // Reset visual feedback
+    if (event.currentTarget instanceof HTMLElement) {
+      event.currentTarget.style.opacity = "1";
+    }
+    setDraggedJob(null);
   };
 
   const handleSlotDrop = useCallback(
@@ -192,7 +212,47 @@ export const JobCalendar: React.FC = () => {
     [draggedJob, updateJob]
   );
 
+  const handleDateDrop = useCallback(
+    async (targetDate: Date, event: React.DragEvent) => {
+      event.preventDefault();
+
+      if (!draggedJob) {
+        return;
+      }
+
+      try {
+        // For month view, schedule at 9 AM by default
+        const startTime = new Date(targetDate);
+        startTime.setHours(9, 0, 0, 0);
+        
+        const endTime = new Date(startTime);
+        endTime.setHours(
+          startTime.getHours() + (draggedJob.duration_hours || 1)
+        );
+
+        await updateJob(draggedJob.id, {
+          status: "scheduled",
+          scheduled_start: startTime.toISOString(),
+          scheduled_end: endTime.toISOString(),
+        });
+
+        toast.success(
+          `Job rescheduled to ${startTime.toLocaleDateString()} at ${startTime.toLocaleTimeString()}`
+        );
+        setDraggedJob(null);
+      } catch (error) {
+        toast.error("Failed to reschedule job");
+      }
+    },
+    [draggedJob, updateJob]
+  );
+
   const handleSlotDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDateDragOver = (event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   };
@@ -238,16 +298,39 @@ export const JobCalendar: React.FC = () => {
         jobDate.getMonth() === date.getMonth() &&
         jobDate.getFullYear() === date.getFullYear()
       );
+    }).sort((a, b) => {
+      // Sort by created_at descending (most recent first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
   };
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    const jobsForDate = getJobsForDate(date);
-    if (jobsForDate.length > 0) {
-      setSelectedJob(jobsForDate[0]);
-      setShowJobModal(true);
-    }
+    setShowDailyPool(true);
+  };
+
+  const getJobsForSelectedDate = () => {
+    if (!selectedDate) return [];
+    return getJobsForDate(selectedDate).sort((a, b) => {
+      // Sort by created_at descending (most recent first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  };
+
+  const getJobsForTechnicianOnDate = (technicianId: string) => {
+    if (!selectedDate) return [];
+    return jobs.filter(job => {
+      if (!job.scheduled_start || job.technician_id !== technicianId) return false;
+      const jobDate = new Date(job.scheduled_start);
+      return (
+        jobDate.getDate() === selectedDate.getDate() &&
+        jobDate.getMonth() === selectedDate.getMonth() &&
+        jobDate.getFullYear() === selectedDate.getFullYear()
+      );
+    }).sort((a, b) => {
+      // Sort by created_at descending (most recent first)
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
   };
 
   const handleJobClick = (job: Job) => {
@@ -265,6 +348,39 @@ export const JobCalendar: React.FC = () => {
       setShowJobModal(false);
     } catch {
       toast.error("Failed to update job status");
+    }
+  };
+
+  const handleTechnicianDrop = async (technicianId: string, event: React.DragEvent) => {
+    event.preventDefault();
+
+    if (!draggedJob) {
+      return;
+    }
+
+    try {
+      // Calculate start time (9 AM by default for the selected date)
+      const startTime = new Date(selectedDate!);
+      startTime.setHours(9, 0, 0, 0);
+      
+      const endTime = new Date(startTime);
+      endTime.setHours(
+        startTime.getHours() + (draggedJob.duration_hours || 1)
+      );
+
+      await updateJob(draggedJob.id, {
+        status: "scheduled",
+        scheduled_start: startTime.toISOString(),
+        scheduled_end: endTime.toISOString(),
+        technician_id: technicianId,
+      });
+
+      toast.success(
+        `Job assigned to ${technicians.find(t => t.id === technicianId)?.name} for ${startTime.toLocaleDateString()}`
+      );
+      setDraggedJob(null);
+    } catch (error) {
+      toast.error("Failed to assign job to technician");
     }
   };
 
@@ -335,6 +451,132 @@ export const JobCalendar: React.FC = () => {
 
       {/* Open Job Pool */}
       <OpenJobPool jobs={jobs} onJobDragStart={handleJobDragStart} />
+
+      {/* Daily Pool View */}
+      {showDailyPool && selectedDate && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+              <Users className="h-6 w-6 mr-2 text-blue-500" />
+              Daily Pool - {selectedDate.toLocaleDateString()}
+            </h3>
+            <Button
+              onClick={() => setShowDailyPool(false)}
+              variant="secondary"
+              size="sm"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Close
+            </Button>
+          </div>
+
+          {/* Daily Pool - Unassigned Jobs */}
+          <div className="mb-6">
+            <h4 className="text-lg font-medium text-gray-800 mb-3">
+              Unassigned Jobs ({getJobsForSelectedDate().filter(job => !job.technician_id).length})
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-h-[100px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              {getJobsForSelectedDate()
+                .filter(job => !job.technician_id)
+                .map(job => (
+                  <div
+                    key={job.id}
+                    draggable
+                    onDragStart={e => handleJobDragStart(job, e)}
+                    onDragEnd={handleJobDragEnd}
+                    onClick={() => handleJobClick(job)}
+                    className={`
+                      p-3 rounded-lg border cursor-move hover:shadow-md transition-shadow
+                      ${getStatusColor(job.status)}
+                    `}
+                  >
+                    <div className="font-medium text-sm truncate">
+                      {job.service_type}
+                    </div>
+                    <div className="text-xs opacity-75 mt-1">
+                      {job.customer?.name} - {job.vehicle?.make} {job.vehicle?.model}
+                    </div>
+                    {job.scheduled_start && (
+                      <div className="text-xs opacity-75 mt-1">
+                        {formatTimeFromLocal(job.scheduled_start)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              {getJobsForSelectedDate().filter(job => !job.technician_id).length === 0 && (
+                <div className="col-span-full flex items-center justify-center text-gray-500 text-sm">
+                  <Wrench className="h-5 w-5 mr-2" />
+                  No unassigned jobs for this day
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Technician Lanes */}
+          <div>
+            <h4 className="text-lg font-medium text-gray-800 mb-3">
+              Technician Assignments
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {technicians.map(technician => {
+                const technicianJobs = getJobsForTechnicianOnDate(technician.id);
+                return (
+                  <div
+                    key={technician.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4 min-h-[200px]"
+                    onDrop={e => handleTechnicianDrop(technician.id, e)}
+                    onDragOver={handleDateDragOver}
+                  >
+                    <div className="font-semibold text-gray-900 mb-3 flex items-center">
+                      <User className="h-4 w-4 mr-2 text-blue-500" />
+                      {technician.name}
+                      <span className="ml-auto text-xs text-gray-500">
+                        ({technicianJobs.length} jobs)
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-2 min-h-[120px]">
+                      {technicianJobs.map(job => (
+                        <div
+                          key={job.id}
+                          draggable
+                          onDragStart={e => handleJobDragStart(job, e)}
+                          onDragEnd={handleJobDragEnd}
+                          onClick={() => handleJobClick(job)}
+                          className={`
+                            p-2 rounded border cursor-move hover:shadow-sm transition-shadow
+                            ${getStatusColor(job.status)}
+                          `}
+                        >
+                          <div className="font-medium text-xs truncate">
+                            {job.service_type}
+                          </div>
+                          <div className="text-xs opacity-75">
+                            {job.customer?.name}
+                          </div>
+                          {job.scheduled_start && (
+                            <div className="text-xs opacity-75">
+                              {formatTimeFromLocal(job.scheduled_start)}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      
+                      {technicianJobs.length === 0 && (
+                        <div className="text-center text-gray-400 text-sm py-4">
+                          <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <div>No jobs assigned</div>
+                          <div className="text-xs mt-1">Drop jobs here</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Calendar Header */}
       <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
@@ -420,6 +662,7 @@ export const JobCalendar: React.FC = () => {
                           onClick={() => handleJobClick(slot.job!)}
                           draggable
                           onDragStart={e => handleJobDragStart(slot.job!, e)}
+                          onDragEnd={handleJobDragEnd}
                         >
                           <div className="font-medium truncate">
                             {slot.job.service_type}
@@ -469,12 +712,15 @@ export const JobCalendar: React.FC = () => {
                 <div
                   key={index}
                   onClick={() => handleDateClick(day.date)}
+                  onDrop={e => handleDateDrop(day.date, e)}
+                  onDragOver={handleDateDragOver}
                   className={`
                     min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer
                     ${day.isCurrentMonth ? "bg-white" : "bg-gray-50"}
                     ${isToday ? "bg-blue-50" : ""}
                     ${isSelected ? "bg-blue-100" : ""}
                     hover:bg-gray-50 transition-colors
+                    ${draggedJob ? "bg-green-50 border-green-300" : ""}
                   `}
                 >
                   <div className="text-sm font-medium mb-1">
@@ -498,10 +744,14 @@ export const JobCalendar: React.FC = () => {
                           e.stopPropagation();
                           handleJobClick(job);
                         }}
+                        draggable
+                        onDragStart={e => handleJobDragStart(job, e)}
+                        onDragEnd={handleJobDragEnd}
                         className={`
-                          p-1 rounded text-xs cursor-pointer border
+                          p-1 rounded text-xs cursor-move border
                           ${getStatusColor(job.status)}
                           hover:opacity-80 transition-opacity
+                          hover:shadow-md
                         `}
                       >
                         <div className="font-medium truncate">
