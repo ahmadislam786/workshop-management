@@ -112,6 +112,9 @@ export const useJobs = () => {
 
   const updateJob = async (id: string, updates: Partial<Job>) => {
     try {
+      // Log the update for debugging
+      console.log("Updating job:", id, "with data:", updates);
+      
       const { data, error } = await supabase
         .from("jobs")
         .update(updates)
@@ -119,14 +122,19 @@ export const useJobs = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase update error:", error);
+        throw error;
+      }
 
+      console.log("Job updated successfully:", data);
       toast.success("Job updated successfully");
       fetchJobs(); // Refresh list
       return { data, error: null };
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      toast.error("Failed to update job");
+      console.error("Job update failed:", errorMessage);
+      toast.error(`Failed to update job: ${errorMessage}`);
       return { data: null, error: errorMessage };
     }
   };

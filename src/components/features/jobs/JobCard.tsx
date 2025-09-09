@@ -43,8 +43,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
     try {
       await updateJob(job.id, {
         status: "pending",
-        scheduled_start: null,
-        scheduled_end: null,
+        scheduled_start: undefined,
+        scheduled_end: undefined,
       });
       setShowPostponeConfirm(false);
     } catch (error) {
@@ -252,7 +252,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
               </h3>
             </div>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to postpone this job? It will be moved back to pending status and its schedule will be cleared.
+              Are you sure you want to postpone this job? It will be moved back
+              to pending status and its schedule will be cleared.
             </p>
             <div className="flex space-x-3">
               <Button

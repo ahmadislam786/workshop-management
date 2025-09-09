@@ -85,8 +85,6 @@ export interface Job {
   customer_id: string;
   vehicle_id: string;
   technician_id?: string;
-  team_id?: string;
-  assigned_employee_id?: string;
   service_type: string;
   status: JobStatus;
   time_frame?: string;

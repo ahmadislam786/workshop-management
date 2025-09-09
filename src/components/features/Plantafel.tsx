@@ -93,7 +93,7 @@ export const Plantafel: React.FC = () => {
             const id = e.dataTransfer.getData("text/plain");
             if (id)
               await updateJob(id, {
-                technician_id: null,
+                technician_id: undefined,
               });
           }}
         >
