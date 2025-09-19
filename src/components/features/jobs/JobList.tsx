@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useJobs } from "@/hooks/useJobs";
+import { useAppointments, useScheduleAssignments } from "@/hooks/useAppointments";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/language-context";
 import { JobCard } from "./JobCard";
@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/Button";
 import { Plus, Wrench } from "lucide-react";
 
 export const JobList: React.FC = () => {
-  const { jobs, loading } = useJobs();
+  const { appointments, loading } = useAppointments();
+  const { assignments } = useScheduleAssignments();
   const { profile, technician } = useAuth();
   const { t } = useLanguage();
   const [showForm, setShowForm] = useState(false);
@@ -23,18 +24,27 @@ export const JobList: React.FC = () => {
     "detailed",
   ];
 
-  const myScope = useMemo(
-    () =>
-      profile?.role === "technician"
-        ? jobs.filter(j => !j.technician_id || j.technician_id === technician?.id)
-        : jobs,
-    [jobs, profile?.role, technician?.id]
-  );
+  const myScope = useMemo(() => {
+    if (profile?.role === "admin") {
+      // Admins see all appointments
+      return appointments;
+    } else if (profile?.role === "technician" && technician?.id) {
+      // Technicians only see appointments assigned to them
+      const assignedAppointmentIds = assignments
+        .filter(assignment => assignment.technician_id === technician.id)
+        .map(assignment => assignment.appointment_id);
+      
+      return appointments.filter(appointment => 
+        assignedAppointmentIds.includes(appointment.id)
+      );
+    }
+    return [];
+  }, [appointments, assignments, profile?.role, technician?.id]);
 
-  const filteredJobs = useMemo(() => {
+  const filteredAppointments = useMemo(() => {
     let list = myScope;
     if (statusFilter !== "all")
-      list = list.filter(j => j.status === statusFilter);
+      list = list.filter(a => a.status === statusFilter);
     switch (sortKey) {
       case "created_at_asc":
         return [...list].sort((a, b) =>
@@ -42,7 +52,7 @@ export const JobList: React.FC = () => {
         );
       case "scheduled_start":
         return [...list].sort((a, b) =>
-          (a.scheduled_start || "").localeCompare(b.scheduled_start || "")
+          (a.date || "").localeCompare(b.date || "")
         );
       default:
         return [...list].sort((a, b) =>
@@ -127,11 +137,13 @@ export const JobList: React.FC = () => {
           onChange={e => setStatusFilter(e.target.value)}
         >
           <option value="all">{t("jobs.all")}</option>
-          <option value="pending">{t("jobs.pending")}</option>
+          <option value="new">{t("jobs.new")}</option>
           <option value="scheduled">{t("jobs.scheduled")}</option>
           <option value="in_progress">{t("jobs.inProgress")}</option>
-          <option value="completed">{t("jobs.completed")}</option>
-          <option value="cancelled">{t("jobs.cancelled")}</option>
+          <option value="paused">{t("jobs.paused")}</option>
+          <option value="waiting_parts">{t("jobs.waitingParts")}</option>
+          <option value="done">{t("jobs.done")}</option>
+          <option value="delivered">{t("jobs.delivered")}</option>
         </select>
         <label className="text-sm text-gray-600 ml-4">{t("jobs.sortBy")}</label>
         <select
@@ -145,7 +157,7 @@ export const JobList: React.FC = () => {
         </select>
       </div>
 
-      {filteredJobs.length === 0 ? (
+      {filteredAppointments.length === 0 ? (
         <div className="text-center py-12">
           <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <Wrench className="h-8 w-8 text-gray-400" />
@@ -165,8 +177,8 @@ export const JobList: React.FC = () => {
               : "md:grid-cols-2 lg:grid-cols-3"
           }`}
         >
-          {filteredJobs.map(job => (
-            <JobCard key={job.id} job={job} mode={viewMode} />
+          {filteredAppointments.map(appointment => (
+            <JobCard key={appointment.id} job={appointment} mode={viewMode} />
           ))}
         </div>
       )}

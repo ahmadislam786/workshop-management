@@ -50,7 +50,7 @@ const OpenJobPool: React.FC<OpenJobPoolProps> = ({ jobs, onJobDragStart }) => {
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
         <Wrench className="h-5 w-5 mr-2 text-orange-500" />
-        Open Job Pool ({openJobs.length})
+        Open Appointment Pool ({openJobs.length})
       </h3>
       <div className="space-y-2 max-h-40 overflow-y-auto">
         {openJobs.map(job => (
@@ -449,7 +449,7 @@ export const JobCalendar: React.FC = () => {
         </div>
       </div>
 
-      {/* Open Job Pool */}
+      {/* Open Appointment Pool */}
       <OpenJobPool jobs={jobs} onJobDragStart={handleJobDragStart} />
 
       {/* Daily Pool View */}
@@ -470,10 +470,10 @@ export const JobCalendar: React.FC = () => {
             </Button>
           </div>
 
-          {/* Daily Pool - Unassigned Jobs */}
+          {/* Daily Pool - Unassigned Appointments */}
           <div className="mb-6">
             <h4 className="text-lg font-medium text-gray-800 mb-3">
-              Unassigned Jobs ({getJobsForSelectedDate().filter(job => !job.technician_id).length})
+              Unassigned Appointments ({getJobsForSelectedDate().filter(job => !job.technician_id).length})
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-h-[100px] p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               {getJobsForSelectedDate()
@@ -531,7 +531,7 @@ export const JobCalendar: React.FC = () => {
                       <User className="h-4 w-4 mr-2 text-blue-500" />
                       {technician.name}
                       <span className="ml-auto text-xs text-gray-500">
-                        ({technicianJobs.length} jobs)
+                        ({technicianJobs.length} appointments)
                       </span>
                     </div>
                     
@@ -565,7 +565,7 @@ export const JobCalendar: React.FC = () => {
                       {technicianJobs.length === 0 && (
                         <div className="text-center text-gray-400 text-sm py-4">
                           <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <div>No jobs assigned</div>
+                          <div>No appointments assigned</div>
                           <div className="text-xs mt-1">Drop jobs here</div>
                         </div>
                       )}

@@ -41,6 +41,10 @@ export interface Database {
           specialization: string | null;
           phone: string | null;
           job_count: number;
+          shift_start: string;
+          shift_end: string;
+          aw_capacity_per_day: number;
+          active: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -52,6 +56,10 @@ export interface Database {
           specialization?: string | null;
           phone?: string | null;
           job_count?: number;
+          shift_start?: string;
+          shift_end?: string;
+          aw_capacity_per_day?: number;
+          active?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -63,6 +71,188 @@ export interface Database {
           specialization?: string | null;
           phone?: string | null;
           job_count?: number;
+          shift_start?: string;
+          shift_end?: string;
+          aw_capacity_per_day?: number;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      technician_absences: {
+        Row: {
+          id: string;
+          technician_id: string;
+          date: string;
+          type: "vacation" | "sick" | "training" | "other";
+          from_time: string | null;
+          to_time: string | null;
+          description: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          technician_id: string;
+          date: string;
+          type: "vacation" | "sick" | "training" | "other";
+          from_time?: string | null;
+          to_time?: string | null;
+          description?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          technician_id?: string;
+          date?: string;
+          type?: "vacation" | "sick" | "training" | "other";
+          from_time?: string | null;
+          to_time?: string | null;
+          description?: string | null;
+          created_at?: string;
+        };
+      };
+      services: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          default_aw_estimate: number;
+          required_skills: string[];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          default_aw_estimate?: number;
+          required_skills?: string[];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          default_aw_estimate?: number;
+          required_skills?: string[];
+          created_at?: string;
+        };
+      };
+      parts: {
+        Row: {
+          id: string;
+          name: string;
+          part_number: string | null;
+          description: string | null;
+          stock_quantity: number;
+          min_stock_level: number;
+          unit_price: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          part_number?: string | null;
+          description?: string | null;
+          stock_quantity?: number;
+          min_stock_level?: number;
+          unit_price?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          part_number?: string | null;
+          description?: string | null;
+          stock_quantity?: number;
+          min_stock_level?: number;
+          unit_price?: number | null;
+          created_at?: string;
+        };
+      };
+      appointments: {
+        Row: {
+          id: string;
+          date: string;
+          customer_id: string;
+          vehicle_id: string;
+          service_id: string | null;
+          title: string;
+          notes: string | null;
+          aw_estimate: number;
+          priority: "low" | "normal" | "high" | "urgent";
+          status: "new" | "scheduled" | "in_progress" | "paused" | "waiting_parts" | "done" | "delivered";
+          required_skills: string[];
+          sla_promised_at: string | null;
+          flags: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          date: string;
+          customer_id: string;
+          vehicle_id: string;
+          service_id?: string | null;
+          title: string;
+          notes?: string | null;
+          aw_estimate?: number;
+          priority?: "low" | "normal" | "high" | "urgent";
+          status?: "new" | "scheduled" | "in_progress" | "paused" | "waiting_parts" | "done" | "delivered";
+          required_skills?: string[];
+          sla_promised_at?: string | null;
+          flags?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          date?: string;
+          customer_id?: string;
+          vehicle_id?: string;
+          service_id?: string | null;
+          title?: string;
+          notes?: string | null;
+          aw_estimate?: number;
+          priority?: "low" | "normal" | "high" | "urgent";
+          status?: "new" | "scheduled" | "in_progress" | "paused" | "waiting_parts" | "done" | "delivered";
+          required_skills?: string[];
+          sla_promised_at?: string | null;
+          flags?: string[];
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      schedule_assignments: {
+        Row: {
+          id: string;
+          appointment_id: string;
+          technician_id: string;
+          start_time: string;
+          end_time: string;
+          aw_planned: number;
+          status: "scheduled" | "in_progress" | "completed" | "cancelled";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          appointment_id: string;
+          technician_id: string;
+          start_time: string;
+          end_time: string;
+          aw_planned: number;
+          status?: "scheduled" | "in_progress" | "completed" | "cancelled";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          appointment_id?: string;
+          technician_id?: string;
+          start_time?: string;
+          end_time?: string;
+          aw_planned?: number;
+          status?: "scheduled" | "in_progress" | "completed" | "cancelled";
           created_at?: string;
           updated_at?: string;
         };

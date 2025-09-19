@@ -147,7 +147,14 @@ export const formatDateTimeLocal = (dateTimeString: string): string => {
     // Split the datetime-local string (format: "2025-08-18T22:00")
     const [datePart, timePart] = dateTimeString.split("T");
 
-    if (!datePart || !timePart) return "Invalid format";
+    // Be tolerant: if only date provided, show date; if only time, show time
+    if (!datePart && !timePart) return "—";
+    if (!datePart && timePart) return formatTimeFromLocal(`2000-01-01T${timePart}`);
+    if (datePart && !timePart) {
+      const [y, m, d] = datePart.split("-").map(Number);
+      const onlyDate = new Date(y, (m || 1) - 1, d || 1);
+      return onlyDate.toLocaleDateString();
+    }
 
     // Parse date parts
     const [year, month, day] = datePart.split("-").map(Number);
@@ -177,7 +184,7 @@ export const formatTimeFromLocal = (dateTimeString: string): string => {
     if (!dateTimeString) return "No time set";
 
     const timePart = dateTimeString.split("T")[1];
-    if (!timePart) return "Invalid format";
+    if (!timePart) return "—";
 
     const [hour, minute] = timePart.split(":").map(Number);
     const date = new Date(2000, 0, 1, hour, minute); // Use arbitrary date, just for time formatting

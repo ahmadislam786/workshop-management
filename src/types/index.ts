@@ -58,12 +58,16 @@ export interface Technician {
   specialization?: string;
   phone?: string;
   job_count: number;
+  shift_start: string;
+  shift_end: string;
+  aw_capacity_per_day: number;
+  active: boolean;
   created_at: string;
   updated_at: string;
 }
 
 /**
- * Job status types
+ * Job status types (legacy - for backward compatibility)
  */
 export type JobStatus =
   | "pending"
@@ -73,12 +77,117 @@ export type JobStatus =
   | "cancelled";
 
 /**
+ * Appointment status types (new system)
+ */
+export type AppointmentStatus =
+  | "new"
+  | "scheduled"
+  | "in_progress"
+  | "paused"
+  | "waiting_parts"
+  | "done"
+  | "delivered";
+
+/**
+ * Priority types
+ */
+export type Priority = "low" | "normal" | "high" | "urgent";
+
+/**
+ * Absence types
+ */
+export type AbsenceType = "vacation" | "sick" | "training" | "other";
+
+/**
  * Job source types
  */
 export type JobSource = "email" | "manual";
 
 /**
- * Job interface
+ * Service interface
+ */
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  default_aw_estimate: number;
+  required_skills: string[];
+  created_at: string;
+}
+
+/**
+ * Part interface
+ */
+export interface Part {
+  id: string;
+  name: string;
+  part_number?: string;
+  description?: string;
+  stock_quantity: number;
+  min_stock_level: number;
+  unit_price?: number;
+  created_at: string;
+}
+
+/**
+ * Technician absence interface
+ */
+export interface TechnicianAbsence {
+  id: string;
+  technician_id: string;
+  date: string;
+  type: AbsenceType;
+  from_time?: string;
+  to_time?: string;
+  description?: string;
+  created_at: string;
+}
+
+/**
+ * Appointment interface (new system)
+ */
+export interface Appointment {
+  id: string;
+  date: string;
+  customer_id: string;
+  vehicle_id: string;
+  service_id?: string;
+  title: string;
+  notes?: string;
+  aw_estimate: number;
+  priority: Priority;
+  status: AppointmentStatus;
+  required_skills: string[];
+  sla_promised_at?: string;
+  flags: string[];
+  created_at: string;
+  updated_at: string;
+  // Related data (populated by joins)
+  customer?: Customer;
+  vehicle?: Vehicle;
+  service?: Service;
+}
+
+/**
+ * Schedule assignment interface
+ */
+export interface ScheduleAssignment {
+  id: string;
+  appointment_id: string;
+  technician_id: string;
+  start_time: string;
+  end_time: string;
+  aw_planned: number;
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
+  created_at: string;
+  updated_at: string;
+  // Related data (populated by joins)
+  appointment?: Appointment;
+  technician?: Technician;
+}
+
+/**
+ * Job interface (legacy - for backward compatibility)
  */
 export interface Job {
   id: string;

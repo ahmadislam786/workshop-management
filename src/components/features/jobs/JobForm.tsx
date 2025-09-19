@@ -170,7 +170,7 @@ export const JobForm: React.FC<JobFormProps> = ({ job, onClose }) => {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900">
-                  {job ? "Edit Job" : "Create New Job"}
+                  {job ? "Edit Appointment" : "Create New Appointment"}
                 </h3>
                 <p className="text-sm text-gray-500">
                   {job

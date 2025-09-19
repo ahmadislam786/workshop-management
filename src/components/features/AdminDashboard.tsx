@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useJobs } from "@/hooks/useJobs";
+import { useAppointments } from "@/hooks/useAppointments";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useTechnicians } from "@/hooks/useTechnicians";
 import { useLanguage } from "@/contexts/language-context";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { StatsCards } from "./StatsCards";
 import { UserManagement } from "@/components/features/admin/UserManagement";
 import { PasswordManagement } from "@/components/features/admin/PasswordManagement";
-import type { Job } from "../../types";
 import { formatTimeFromLocal, formatDateTimeLocal } from "@/lib/utils";
 import {
   Calendar,
@@ -30,43 +29,48 @@ interface AdminDashboardProps {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onNavigate,
 }) => {
-  const { jobs, loading: jobsLoading } = useJobs();
+  const { appointments, loading: appointmentsLoading } = useAppointments();
   const { customers } = useCustomers();
   const { technicians } = useTechnicians();
   const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [selectedJob, setSelectedJob] = useState<any | null>(null);
   const [showJobModal, setShowJobModal] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showPasswordManagement, setShowPasswordManagement] = useState(false);
 
   // Calculate stats from real data
-  const totalJobs = jobs?.length || 0;
+  const totalAppointments = appointments?.length || 0;
   const activeCustomers =
     customers?.filter(c => c.status === "active").length || 0;
   const totalTechnicians = technicians?.length || 0;
-  const activeJobs = jobs?.filter(j => j.status === "in_progress").length || 0;
-  const pendingJobs = jobs?.filter(j => j.status === "pending").length || 0;
-  const completedJobs = jobs?.filter(j => j.status === "completed").length || 0;
+  const activeAppointments =
+    appointments?.filter(a => a.status === "in_progress").length || 0;
+  const pendingAppointments =
+    appointments?.filter(a => a.status === "new").length || 0;
+  const completedAppointments =
+    appointments?.filter(a => a.status === "delivered").length || 0;
 
   // Calculate additional real metrics
-  const totalRevenue = completedJobs * 150; // Estimate €150 per completed job
+  const totalRevenue = completedAppointments * 150; // Estimate €150 per completed appointment
   const efficiencyRate =
-    totalJobs > 0 ? Math.round((completedJobs / totalJobs) * 100) : 0;
+    totalAppointments > 0
+      ? Math.round((completedAppointments / totalAppointments) * 100)
+      : 0;
   const customerSatisfaction =
-    totalJobs > 0
-      ? (4.2 + (completedJobs / totalJobs) * 0.8).toFixed(1)
+    totalAppointments > 0
+      ? (4.2 + (completedAppointments / totalAppointments) * 0.8).toFixed(1)
       : "4.0";
 
   const stats = {
-    totalJobs,
+    totalAppointments,
     activeCustomers,
     totalTechnicians,
-    pendingJobs,
-    completedJobs,
-    inProgressJobs: activeJobs,
+    pendingAppointments,
+    completedAppointments,
+    inProgressAppointments: activeAppointments,
   };
 
   const handleNavigate = (tab: string) => {
@@ -115,27 +119,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return days;
   };
 
-  const getJobsForDate = (date: Date) => {
-    return jobs.filter(job => {
-      if (!job.scheduled_start) return false;
-      const jobDate = new Date(job.scheduled_start);
+  const getAppointmentsForDate = (date: Date) => {
+    return appointments.filter(appointment => {
+      if (!appointment.date) return false;
+      const appointmentDate = new Date(appointment.date);
       return (
-        jobDate.getDate() === date.getDate() &&
-        jobDate.getMonth() === date.getMonth() &&
-        jobDate.getFullYear() === date.getFullYear()
+        appointmentDate.getDate() === date.getDate() &&
+        appointmentDate.getMonth() === date.getMonth() &&
+        appointmentDate.getFullYear() === date.getFullYear()
       );
     });
   };
 
-  const getStatusColor = (status: Job["status"]) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
+      case "new":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "scheduled":
         return "bg-blue-100 text-blue-800 border-blue-200";
       case "in_progress":
         return "bg-orange-100 text-orange-800 border-orange-200";
-      case "completed":
+      case "paused":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      case "waiting_parts":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "done":
+      case "delivered":
         return "bg-green-100 text-green-800 border-green-200";
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200";
@@ -150,15 +159,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);
-    const jobsForDate = getJobsForDate(date);
-    if (jobsForDate.length > 0) {
-      setSelectedJob(jobsForDate[0]);
+    const appointmentsForDate = getAppointmentsForDate(date);
+    if (appointmentsForDate.length > 0) {
+      setSelectedJob(appointmentsForDate[0]);
       setShowJobModal(true);
     }
   };
 
-  const handleJobClick = (job: Job) => {
-    setSelectedJob(job);
+  const handleJobClick = (appointment: any) => {
+    setSelectedJob(appointment);
     setShowJobModal(true);
   };
 
@@ -192,7 +201,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 md:p-8 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 md:p-8 text-white animate-scale-in hover-lift">
         <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
           <div className="bg-white/20 rounded-full p-3 self-start md:self-auto">
             <Wrench className="h-8 w-8" />
@@ -219,24 +228,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="flex items-center space-x-2">
             <Users className="h-5 w-5" />
             <span className="text-blue-100 text-sm md:text-base">
-              {activeJobs} {t("dashboard.jobsActive")}
+              {activeAppointments} {t("dashboard.jobsActive")}
             </span>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <StatsCards stats={stats} />
+      <div className="animate-fade-in">
+        <StatsCards stats={stats} />
+      </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
-          onClick={handleViewCalendar}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          onClick={() => handleNavigate("dayview")}
         >
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="bg-blue-100 p-2 md:p-3 rounded-xl">
               <Calendar className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-base md:text-lg font-semibold text-gray-900">
+                {t("nav.dayview")}
+              </h3>
+              <p className="text-gray-600 text-sm md:text-base">
+                {t("nav.dayview.desc")}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          onClick={handleViewCalendar}
+        >
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="bg-green-100 p-2 md:p-3 rounded-xl">
+              <Calendar className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
             </div>
             <div>
               <h3 className="text-base md:text-lg font-semibold text-gray-900">
@@ -252,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
           onClick={handleViewCustomers}
         >
           <div className="flex items-center space-x-3 md:space-x-4">
@@ -271,7 +301,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
           onClick={handleViewTechnicians}
         >
           <div className="flex items-center space-x-3 md:space-x-4">
@@ -290,7 +320,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
           onClick={handleViewPasswordManagement}
         >
           <div className="flex items-center space-x-3 md:space-x-4">
@@ -309,7 +339,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1 cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6 card-hover cursor-pointer focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
           onClick={() => setShowUserManagement(true)}
         >
           <div className="flex items-center space-x-3 md:space-x-4">
@@ -328,8 +358,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       </div>
 
-      {/* Open Job Pool Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+      {/* Open Appointment Pool Section */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 animate-fade-in">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 flex items-center">
             <Wrench className="h-5 w-5 mr-2 text-orange-500" />
@@ -337,7 +367,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </h2>
           <span className="bg-orange-100 text-orange-800 text-sm font-medium px-3 py-1 rounded-full">
             {
-              jobs.filter(job => job.status === "pending" && !job.technician_id)
+              appointments.filter(appointment => appointment.status === "new")
                 .length
             }{" "}
             {t("dashboard.jobs")}
@@ -345,19 +375,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         <div className="space-y-3 max-h-48 overflow-y-auto">
-          {jobs.filter(job => job.status === "pending" && !job.technician_id)
+          {appointments.filter(appointment => appointment.status === "new")
             .length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Wrench className="h-8 w-8 mx-auto mb-2 text-gray-300" />
               <p className="text-sm">{t("dashboard.noOpenJobs")}</p>
             </div>
           ) : (
-            jobs
-              .filter(job => job.status === "pending" && !job.technician_id)
+            appointments
+              .filter(appointment => appointment.status === "new")
               .slice(0, 5)
-              .map(job => (
+              .map(appointment => (
                 <div
-                  key={job.id}
+                  key={appointment.id}
                   className="flex items-center justify-between p-3 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
                   onClick={() => handleViewAllJobs()}
                 >
@@ -366,19 +396,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                       <div>
                         <p className="font-medium text-orange-800 text-sm">
-                          {job.service_type}
+                          {appointment.title}
                         </p>
                         <p className="text-orange-600 text-xs">
-                          {job.customer?.name} - {job.vehicle?.make}{" "}
-                          {job.vehicle?.model}
+                          {appointment.customer?.name} -{" "}
+                          {appointment.vehicle?.make}{" "}
+                          {appointment.vehicle?.model}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-orange-600">
-                      {job.created_at
-                        ? new Date(job.created_at).toLocaleDateString()
+                      {appointment.created_at
+                        ? new Date(appointment.created_at).toLocaleDateString()
                         : "N/A"}
                     </p>
                     <Button
@@ -398,7 +429,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
         </div>
 
-        {jobs.filter(job => job.status === "pending" && !job.technician_id)
+        {appointments.filter(appointment => appointment.status === "new")
           .length > 5 && (
           <div className="mt-4 text-center">
             <Button
@@ -409,9 +440,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               {t("job.viewAllOpenJobs")} (
               {
-                jobs.filter(
-                  job => job.status === "pending" && !job.technician_id
-                ).length
+                appointments.filter(appointment => appointment.status === "new")
+                  .length
               }
               )
             </Button>
@@ -470,7 +500,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Calendar Days */}
             {getDaysInMonth(currentDate).map((day, index) => {
-              const jobsForDay = getJobsForDate(day.date);
+              const appointmentsForDay = getAppointmentsForDate(day.date);
               const isToday =
                 day.date.toDateString() === new Date().toDateString();
 
@@ -488,31 +518,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                   {/* Jobs for this day */}
                   <div className="space-y-1">
-                    {jobsForDay.slice(0, 2).map(job => (
+                    {appointmentsForDay.slice(0, 2).map(appointment => (
                       <div
-                        key={job.id}
+                        key={appointment.id}
                         onClick={e => {
                           e.stopPropagation();
-                          handleJobClick(job);
+                          handleJobClick(appointment);
                         }}
                         className={`text-xs p-1 rounded border cursor-pointer ${getStatusColor(
-                          job.status
+                          appointment.status
                         )}`}
-                        title={`${job.service_type} - ${job.status}`}
+                        title={`${appointment.title} - ${appointment.status}`}
                       >
                         <div className="truncate font-medium">
-                          {job.service_type}
+                          {appointment.title}
                         </div>
                         <div className="text-xs opacity-75">
-                          {job.scheduled_start
-                            ? formatTime(job.scheduled_start)
-                            : ""}
+                          {appointment.date ? formatTime(appointment.date) : ""}
                         </div>
                       </div>
                     ))}
-                    {jobsForDay.length > 2 && (
+                    {appointmentsForDay.length > 2 && (
                       <div className="text-xs text-gray-500 text-center">
-                        +{jobsForDay.length - 2} more
+                        +{appointmentsForDay.length - 2} more
                       </div>
                     )}
                   </div>
@@ -523,7 +551,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {/* Recent Jobs */}
+      {/* Recent Appointments */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -541,17 +569,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        {jobsLoading ? (
-          <div className="text-center py-8">
+        {appointmentsLoading ? (
+          <div className="text-center py-8 animate-fade-in">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-500">{t("dashboard.loadingJobs")}</p>
           </div>
-        ) : jobs && jobs.length > 0 ? (
+        ) : appointments && appointments.length > 0 ? (
           <div className="space-y-4">
-            {jobs.slice(0, 5).map(job => (
+            {appointments.slice(0, 5).map(appointment => (
               <div
-                key={job.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                key={appointment.id}
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer hover-lift"
                 onClick={() => handleViewAllJobs()}
               >
                 <div className="flex items-center space-x-4">
@@ -560,17 +588,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">
-                      {job.service_type}
+                      {appointment.title}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {t("job.status")}: {t(`status.${job.status}`)}
+                      {t("job.status")}: {t(`status.${appointment.status}`)}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
-                    {job.scheduled_start
-                      ? formatDateTimeLocal(job.scheduled_start)
+                    {appointment.date
+                      ? formatDateTimeLocal(appointment.date)
                       : t("job.noDate")}
                   </p>
                   <div className="flex space-x-2 mt-2">
@@ -600,7 +628,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
+          <div className="text-center py-8 animate-fade-in">
             <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500">{t("dashboard.noJobsFound")}</p>
             <Button
@@ -618,7 +646,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Quick Stats Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white hover-lift">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm">
@@ -634,7 +662,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl p-6 text-white hover-lift">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100 text-sm">
@@ -648,7 +676,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
 
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white hover-lift">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100 text-sm">
@@ -665,8 +693,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Job Details Modal */}
       {showJobModal && selectedJob && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-screen overflow-y-auto shadow-2xl animate-scale-in">
             <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">

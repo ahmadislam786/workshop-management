@@ -119,6 +119,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       description: t("nav.planningBoard.desc"),
       color: "text-pink-600",
     },
+    {
+      id: "dayview",
+      label: t("nav.dayview"),
+      icon: LayoutDashboard,
+      description: t("nav.dayview.desc"),
+      color: "text-cyan-600",
+    },
   ];
 
   const technicianTabs = [
@@ -279,6 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ? "justify-center"
                         : ""
                     }
+                    will-change-transform
                   `}
                   aria-current={isActive ? "page" : undefined}
                   aria-label={
@@ -289,8 +297,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   title={isCollapsed ? tab.description : undefined}
                 >
                   <Icon
-                    className={`h-5 w-5 flex-shrink-0 ${
-                      isActive ? "text-blue-600" : tab.color
+                    className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                      isActive ? "text-blue-600 scale-105" : `${tab.color} group-hover:scale-105`
                     }`}
                   />
                   {(!isCollapsed || screenSize === "mobile") && (

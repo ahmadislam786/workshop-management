@@ -11,12 +11,12 @@ import {
 
 interface StatsCardsProps {
   stats: {
-    totalJobs: number;
+    totalAppointments: number;
     activeCustomers: number;
     totalTechnicians: number;
-    pendingJobs: number;
-    completedJobs: number;
-    inProgressJobs: number;
+    pendingAppointments: number;
+    completedAppointments: number;
+    inProgressAppointments: number;
   };
 }
 
@@ -26,13 +26,13 @@ export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
   const cards = useMemo(
     () => [
       {
-        title: t("stats.totalJobs"),
-        value: stats.totalJobs,
+        title: t("stats.totalAppointments"),
+        value: stats.totalAppointments,
         icon: Wrench,
         color: "text-blue-600",
         bgColor: "bg-blue-100",
         gradient: "from-blue-500 to-blue-600",
-        description: t("stats.allTimeJobs"),
+        description: t("stats.allTimeAppointments"),
       },
       {
         title: t("stats.activeCustomers"),
@@ -53,8 +53,8 @@ export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
         description: t("stats.teamMembers"),
       },
       {
-        title: t("stats.pendingJobs"),
-        value: stats.pendingJobs,
+        title: t("stats.pendingAppointments"),
+        value: stats.pendingAppointments,
         icon: Clock,
         color: "text-orange-600",
         bgColor: "bg-orange-100",
@@ -63,7 +63,7 @@ export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
       },
       {
         title: t("stats.inProgress"),
-        value: stats.inProgressJobs,
+        value: stats.inProgressAppointments,
         icon: AlertCircle,
         color: "text-yellow-600",
         bgColor: "bg-yellow-100",
@@ -72,7 +72,7 @@ export const StatsCards: React.FC<StatsCardsProps> = React.memo(({ stats }) => {
       },
       {
         title: t("stats.completed"),
-        value: stats.completedJobs,
+        value: stats.completedAppointments,
         icon: CheckCircle,
         color: "text-emerald-600",
         bgColor: "bg-emerald-100",

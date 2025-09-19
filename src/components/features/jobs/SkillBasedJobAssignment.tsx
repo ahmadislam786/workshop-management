@@ -359,10 +359,7 @@ export const SkillBasedJobAssignment: React.FC = () => {
                             size="sm"
                             className="mt-2"
                             onClick={() => {
-                              // Handle job assignment
-                              console.log(
-                                `Assigning job ${selectedJob?.id} to ${rec.technician_name}`
-                              );
+                              // Handle job assignment (implementation elsewhere)
                             }}
                           >
                             {t("jobs.assign")}

@@ -14,7 +14,9 @@ import { TechnicianList } from "@/components/features/technicians/TechnicianList
 import { VehicleList } from "@/components/features/vehicles/VehicleList";
 import { Leitstand } from "@/components/features/Leitstand";
 import { Plantafel } from "@/components/features/Plantafel";
+import { DayViewPlanner } from "@/components/features/DayViewPlanner";
 import { LoginForm } from "@/components/features/LoginForm";
+import { NotificationInitializer } from "@/components/shared/NotificationInitializer";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -37,6 +39,8 @@ const AppContent: React.FC = () => {
           return <Leitstand />;
         case "plantafel":
           return <Plantafel />;
+        case "dayview":
+          return <DayViewPlanner />;
         case "calendar":
           return <JobCalendar />;
         case "customers":
@@ -62,9 +66,12 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {renderContent()}
-    </Layout>
+    <>
+      <NotificationInitializer />
+      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+        {renderContent()}
+      </Layout>
+    </>
   );
 };
 

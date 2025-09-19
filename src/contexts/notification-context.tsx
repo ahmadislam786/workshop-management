@@ -1,6 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
+import { PushNotificationService } from "@/lib/push-notification-service";
 
 export interface Notification {
   id: string;
@@ -19,10 +26,16 @@ interface NotificationContextType {
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   addNotification: (
-    notification: Omit<Notification, "id" | "created_at" | "is_read" | "user_id">
+    notification: Omit<
+      Notification,
+      "id" | "created_at" | "is_read" | "user_id"
+    >
   ) => Promise<void>;
   loading: boolean;
   isLive: boolean;
+  pushNotificationsEnabled: boolean;
+  enablePushNotifications: () => Promise<boolean>;
+  disablePushNotifications: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -36,10 +49,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const { profile } = useAuth();
   const [isLive, setIsLive] = useState(false);
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] =
+    useState(false);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!profile) return;
 
     try {
@@ -58,7 +73,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [profile]);
 
   const markAsRead = async (id: string) => {
     try {
@@ -96,7 +111,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const addNotification = async (
-    notification: Omit<Notification, "id" | "created_at" | "is_read" | "user_id">
+    notification: Omit<
+      Notification,
+      "id" | "created_at" | "is_read" | "user_id"
+    >
   ) => {
     if (!profile) return;
 
@@ -121,6 +139,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // Initialize push notifications
+  useEffect(() => {
+    const initializePushNotifications = async () => {
+      try {
+        const enabled = await PushNotificationService.initialize();
+        setPushNotificationsEnabled(enabled);
+      } catch (error) {
+        console.error("Failed to initialize push notifications:", error);
+      }
+    };
+
+    initializePushNotifications();
+  }, []);
+
   useEffect(() => {
     if (profile) {
       fetchNotifications();
@@ -137,7 +169,24 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
             filter: `user_id=eq.${profile.id}`,
           },
           payload => {
-            setNotifications(prev => [payload.new as Notification, ...prev]);
+            const newNotification = payload.new as Notification;
+            setNotifications(prev => [newNotification, ...prev]);
+
+            // Show push notification if enabled
+            if (
+              pushNotificationsEnabled &&
+              PushNotificationService.isAvailable()
+            ) {
+              PushNotificationService.showNotification({
+                title: "Workshop Management",
+                body: newNotification.message,
+                tag: "workshop-notification",
+                data: {
+                  action_link: newNotification.action_link,
+                  type: newNotification.type,
+                },
+              }).catch(console.error);
+            }
           }
         )
         .on(
@@ -177,7 +226,23 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         supabase.removeChannel(channel);
       };
     }
-  }, [profile]);
+  }, [profile, pushNotificationsEnabled, fetchNotifications]);
+
+  const enablePushNotifications = async (): Promise<boolean> => {
+    try {
+      const permission = await PushNotificationService.requestPermission();
+      const enabled = permission === "granted";
+      setPushNotificationsEnabled(enabled);
+      return enabled;
+    } catch (error) {
+      console.error("Failed to enable push notifications:", error);
+      return false;
+    }
+  };
+
+  const disablePushNotifications = () => {
+    setPushNotificationsEnabled(false);
+  };
 
   return (
     <NotificationContext.Provider
@@ -189,6 +254,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
         addNotification,
         loading,
         isLive,
+        pushNotificationsEnabled,
+        enablePushNotifications,
+        disablePushNotifications,
       }}
     >
       {children}

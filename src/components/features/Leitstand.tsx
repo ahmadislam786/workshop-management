@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useJobs } from "@/hooks/useJobs";
+import { useAppointments } from "@/hooks/useAppointments";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import { SearchFilter } from "@/components/ui/SearchFilter";
@@ -25,7 +25,7 @@ interface JobGroup {
 }
 
 export const Leitstand: React.FC = () => {
-  const { jobs, loading, refetch } = useJobs();
+  const { appointments, loading, fetchAppointments } = useAppointments();
   const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("");
@@ -64,8 +64,8 @@ export const Leitstand: React.FC = () => {
       };
     });
 
-    jobs.forEach(job => {
-      const groupName = mapServiceToGroup(job.service_type);
+    appointments.forEach(appointment => {
+      const groupName = mapServiceToGroup(appointment.title);
       if (!groups[groupName]) {
         groups[groupName] = {
           group: groupName,
@@ -77,24 +77,28 @@ export const Leitstand: React.FC = () => {
         };
       }
 
-      groups[groupName].jobs.push(job);
+      groups[groupName].jobs.push(appointment);
       groups[groupName].total++;
 
-      switch (job.status) {
+      switch (appointment.status) {
         case "in_progress":
+        case "paused":
+        case "waiting_parts":
           groups[groupName].inProgress++;
           break;
-        case "completed":
+        case "done":
+        case "delivered":
           groups[groupName].completed++;
           break;
-        case "pending":
+        case "new":
+        case "scheduled":
           groups[groupName].pending++;
           break;
       }
     });
 
     return Object.values(groups);
-  }, [jobs]);
+  }, [appointments]);
 
   // Filter groups based on search and filters
   const filteredGroups = useMemo(() => {
@@ -191,7 +195,7 @@ export const Leitstand: React.FC = () => {
 
         <Button
           variant="outline"
-          onClick={refetch}
+          onClick={fetchAppointments}
           leftIcon={<RefreshCw className="h-4 w-4" />}
         >
           Refresh

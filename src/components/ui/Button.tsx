@@ -39,22 +39,22 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   // Enhanced base classes with better accessibility
   const baseClasses =
-    "inline-flex items-center justify-center font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 btn-interactive relative overflow-hidden";
+    "inline-flex items-center justify-center font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 btn-interactive relative overflow-hidden will-change-transform";
 
   // Enhanced variants with better contrast and accessibility
   const variants = {
     primary:
-      "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-lg hover:shadow-xl focus:shadow-xl",
+      "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 focus:ring-blue-500 shadow-lg hover:shadow-xl focus:shadow-xl active:scale-[0.98]",
     secondary:
-      "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300 hover:border-gray-400",
+      "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500 border border-gray-300 hover:border-gray-400 active:scale-[0.98]",
     danger:
-      "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-lg hover:shadow-xl focus:shadow-xl",
+      "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 focus:ring-red-500 shadow-lg hover:shadow-xl focus:shadow-xl active:scale-[0.98]",
     success:
-      "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-lg hover:shadow-xl focus:shadow-xl",
+      "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-lg hover:shadow-xl focus:shadow-xl active:scale-[0.98]",
     outline:
-      "bg-transparent text-blue-600 border-2 border-blue-600 hover:bg-blue-50 focus:ring-blue-500 hover:border-blue-700",
+      "bg-transparent text-blue-600 border-2 border-blue-600 hover:bg-blue-50 focus:ring-blue-500 hover:border-blue-700 active:scale-[0.98]",
     ghost:
-      "bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500 hover:text-gray-900",
+      "bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500 hover:text-gray-900 active:scale-[0.98]",
   };
 
   // Enhanced sizes with better touch targets
@@ -88,7 +88,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {/* Loading state with better accessibility */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-inherit rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-inherit rounded-lg animate-fade-in">
           <Loader2
             className="h-4 w-4 animate-spin"
             aria-hidden="true"

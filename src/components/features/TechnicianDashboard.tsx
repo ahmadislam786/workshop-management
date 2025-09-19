@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useJobs } from "@/hooks/useJobs";
+import { useAppointments, useScheduleAssignments } from "@/hooks/useAppointments";
 import { useLanguage } from "@/contexts/language-context";
 import { Button } from "@/components/ui/Button";
 import {
@@ -15,44 +15,61 @@ import { formatTimeFromLocal, formatDateShort } from "@/lib/utils";
 
 export const TechnicianDashboard: React.FC = () => {
   const { technician } = useAuth();
-  const { jobs, updateJob } = useJobs();
+  const { appointments, updateAppointment } = useAppointments();
+  const { assignments } = useScheduleAssignments();
   const { t } = useLanguage();
   const [updatingJob, setUpdatingJob] = useState<string | null>(null);
   const [showCompletedJobs, setShowCompletedJobs] = useState(false);
 
-  // Filter jobs for the current technician using technician.id
-  const technicianJobs = jobs.filter(
-    job => job.technician_id === technician?.id
+  // Get appointments assigned to this technician through schedule assignments
+  const technicianAppointments = useMemo(() => {
+    if (!technician?.id) return [];
+    
+    const assignedAppointmentIds = assignments
+      .filter(assignment => assignment.technician_id === technician.id)
+      .map(assignment => assignment.appointment_id);
+    
+    return appointments.filter(appointment => 
+      assignedAppointmentIds.includes(appointment.id)
+    );
+  }, [appointments, assignments, technician?.id]);
+
+  // Separate active and completed appointments
+  const activeAppointments = technicianAppointments.filter(
+    appointment => !["done", "delivered"].includes(appointment.status)
+  );
+  const completedAppointments = technicianAppointments.filter(
+    appointment => ["done", "delivered"].includes(appointment.status)
   );
 
-  // Separate active and completed jobs
-  const activeJobs = technicianJobs.filter(job => job.status !== "completed");
-  const completedJobs = technicianJobs.filter(
-    job => job.status === "completed"
-  );
-
-  // Show either active jobs or all jobs based on toggle
-  const displayJobs = showCompletedJobs ? technicianJobs : activeJobs;
+  // Show either active appointments or all appointments based on toggle
+  const displayAppointments = showCompletedJobs ? technicianAppointments : activeAppointments;
 
   // Calculate stats
   const stats = {
-    totalJobs: technicianJobs.length,
-    pendingJobs: technicianJobs.filter(j => j.status === "pending").length,
-    inProgressJobs: technicianJobs.filter(j => j.status === "in_progress")
-      .length,
-    completedJobs: completedJobs.length,
+    totalJobs: technicianAppointments.length,
+    pendingJobs: technicianAppointments.filter(j => j.status === "new").length,
+    inProgressJobs: technicianAppointments.filter(j => 
+      ["scheduled", "in_progress", "paused", "waiting_parts"].includes(j.status)
+    ).length,
+    completedJobs: completedAppointments.length,
   };
 
-  // Helper functions for job status management
+  // Helper functions for appointment status management
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "pending":
+      case "new":
         return <Clock className="h-4 w-4" />;
       case "scheduled":
         return <AlertCircle className="h-4 w-4" />;
       case "in_progress":
         return <TrendingUp className="h-4 w-4" />;
-      case "completed":
+      case "paused":
+        return <Clock className="h-4 w-4" />;
+      case "waiting_parts":
+        return <AlertCircle className="h-4 w-4" />;
+      case "done":
+      case "delivered":
         return <CheckCircle className="h-4 w-4" />;
       case "cancelled":
         return <AlertCircle className="h-4 w-4" />;
@@ -63,13 +80,18 @@ export const TechnicianDashboard: React.FC = () => {
 
   const getNextAction = (status: string): string | null => {
     switch (status) {
-      case "pending":
+      case "new":
         return "Begin Work";
       case "scheduled":
         return "Start Work";
       case "in_progress":
         return "Complete";
-      case "completed":
+      case "paused":
+        return "Resume";
+      case "waiting_parts":
+        return "Continue";
+      case "done":
+      case "delivered":
       case "cancelled":
         return null;
       default:
@@ -79,13 +101,18 @@ export const TechnicianDashboard: React.FC = () => {
 
   const getNextStatus = (status: string): string | null => {
     switch (status) {
-      case "pending":
+      case "new":
         return "in_progress";
       case "scheduled":
         return "in_progress";
       case "in_progress":
-        return "completed";
-      case "completed":
+        return "done";
+      case "paused":
+        return "in_progress";
+      case "waiting_parts":
+        return "in_progress";
+      case "done":
+      case "delivered":
       case "cancelled":
         return null;
       default:
@@ -93,10 +120,10 @@ export const TechnicianDashboard: React.FC = () => {
     }
   };
 
-  const handleStatusUpdate = async (jobId: string, newStatus: string) => {
-    setUpdatingJob(jobId);
+  const handleStatusUpdate = async (appointmentId: string, newStatus: string) => {
+    setUpdatingJob(appointmentId);
     try {
-      await updateJob(jobId, { status: newStatus as any });
+      await updateAppointment(appointmentId, { status: newStatus as any });
     } catch (error) {
       // Error handling is done in the hook
     } finally {
@@ -106,14 +133,19 @@ export const TechnicianDashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending":
+      case "new":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "in_progress":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "completed":
-        return "bg-green-100 text-green-800 border-green-200";
       case "scheduled":
         return "bg-blue-100 text-blue-800 border-blue-200";
+      case "in_progress":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "paused":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      case "waiting_parts":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "done":
+      case "delivered":
+        return "bg-green-100 text-green-800 border-green-200";
       case "cancelled":
         return "bg-red-100 text-red-800 border-red-200";
       default:
@@ -218,11 +250,11 @@ export const TechnicianDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 flex items-center">
               {/* Wrench icon removed as per new_code */}
-              My Jobs
+              My Appointments
             </h3>
 
             {/* Toggle for completed jobs */}
-            {completedJobs.length > 0 && (
+            {completedAppointments.length > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -237,50 +269,50 @@ export const TechnicianDashboard: React.FC = () => {
               >
                 {showCompletedJobs
                   ? "Hide Completed"
-                  : `Show Completed (${completedJobs.length})`}
+                  : `Show Completed (${completedAppointments.length})`}
               </Button>
             )}
           </div>
         </div>
 
         <div className="p-6">
-          {displayJobs.length === 0 ? (
+          {displayAppointments.length === 0 ? (
             <div className="text-center py-12">
               {/* Wrench icon removed as per new_code */}
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 {showCompletedJobs
-                  ? "No jobs found"
+                  ? "No appointments found"
                   : "No active jobs assigned"}
               </h3>
               <p className="text-gray-500">
                 {showCompletedJobs
-                  ? "No jobs match the current filter"
+                  ? "No appointments match the current filter"
                   : "Check back later for new assignments"}
               </p>
             </div>
           ) : (
             <div className="space-y-6">
-              {displayJobs.map(job => (
+              {displayAppointments.map(appointment => (
                 <div
-                  key={job.id}
+                  key={appointment.id}
                   className={`bg-gray-50 rounded-xl p-6 hover:bg-gray-100 transition-colors duration-200 border border-gray-200 ${
-                    job.status === "completed" ? "opacity-75" : ""
+                    ["done", "delivered"].includes(appointment.status) ? "opacity-75" : ""
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-3">
                         <h4 className="text-lg font-semibold text-gray-900">
-                          {job.service_type}
+                          {appointment.title}
                         </h4>
                         <span
                           className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full border ${getStatusColor(
-                            job.status
+                            appointment.status
                           )}`}
                         >
-                          {getStatusIcon(job.status)}
+                          {getStatusIcon(appointment.status)}
                           <span className="ml-1">
-                            {job.status.replace("_", " ")}
+                            {appointment.status.replace("_", " ")}
                           </span>
                         </span>
                       </div>
@@ -293,7 +325,7 @@ export const TechnicianDashboard: React.FC = () => {
                               Customer
                             </span>
                           </div>
-                          <p className="text-gray-700">{job.customer?.name}</p>
+                          <p className="text-gray-700">{appointment.customer?.name}</p>
                         </div>
 
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
@@ -302,53 +334,47 @@ export const TechnicianDashboard: React.FC = () => {
                               Vehicle
                             </span>
                           </div>
-                          {job.vehicle && (
+                          {appointment.vehicle && (
                             <>
                               <p className="text-gray-700">
-                                {job.vehicle.make} {job.vehicle.model}
+                                {appointment.vehicle.make} {appointment.vehicle.model}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {job.vehicle.license_plate}
+                                {appointment.vehicle.license_plate}
                               </p>
                               <p className="text-sm text-gray-500">
-                                {job.vehicle.year}
+                                {appointment.vehicle.year}
                               </p>
                             </>
                           )}
                         </div>
                       </div>
 
-                      {/* Job Details */}
+                      {/* Appointment Details */}
                       <div className="bg-white rounded-lg p-4 border border-gray-200 mb-4">
                         <div className="flex items-center space-x-2 mb-2">
                           <span className="text-sm font-medium text-gray-900">
-                            Job Details
+                            Appointment Details
                           </span>
                         </div>
-                        {job.scheduled_start && (
+                        {appointment.date && (
                           <div className="text-sm text-gray-600 mb-2">
                             <span>
-                              Scheduled: {formatDateShort(job.scheduled_start)}{" "}
-                              at {formatTimeFromLocal(job.scheduled_start)}
+                              Scheduled: {formatDateShort(appointment.date)}{" "}
+                              at {formatTimeFromLocal(appointment.date)}
                             </span>
                           </div>
                         )}
-                        {job.parts_needed && (
+                        {appointment.notes && (
                           <div className="text-sm text-gray-600 mb-2">
-                            <span className="font-medium">Parts needed:</span>{" "}
-                            {job.parts_needed}
-                          </div>
-                        )}
-                        {job.notes && (
-                          <div className="text-sm text-gray-600">
                             <span className="font-medium">Notes:</span>{" "}
-                            {job.notes}
+                            {appointment.notes}
                           </div>
                         )}
-                        {job.duration_hours && (
+                        {appointment.aw_estimate && (
                           <div className="text-sm text-gray-600">
-                            <span className="font-medium">Duration:</span>{" "}
-                            {job.duration_hours} hours
+                            <span className="font-medium">Estimated Duration:</span>{" "}
+                            {appointment.aw_estimate} AW ({(appointment.aw_estimate * 6 / 60).toFixed(1)} hours)
                           </div>
                         )}
                       </div>
@@ -358,24 +384,24 @@ export const TechnicianDashboard: React.FC = () => {
                   {/* Action Buttons */}
                   <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                     <div className="text-sm text-gray-500">
-                      Job ID: {job.id.slice(0, 8)}...
+                      Appointment ID: {appointment.id.slice(0, 8)}...
                     </div>
                     <div className="flex space-x-3">
-                      {getNextAction(job.status) &&
-                        getNextStatus(job.status) && (
+                      {getNextAction(appointment.status) &&
+                        getNextStatus(appointment.status) && (
                           <Button
                             onClick={() =>
                               handleStatusUpdate(
-                                job.id,
-                                getNextStatus(job.status)!
+                                appointment.id,
+                                getNextStatus(appointment.status)!
                               )
                             }
-                            disabled={updatingJob === job.id}
-                            loading={updatingJob === job.id}
+                            disabled={updatingJob === appointment.id}
+                            loading={updatingJob === appointment.id}
                             variant="primary"
                             size="sm"
                           >
-                            {getNextAction(job.status)}
+                            {getNextAction(appointment.status)}
                           </Button>
                         )}
                     </div>

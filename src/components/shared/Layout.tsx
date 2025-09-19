@@ -143,7 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({
             : "ml-0 md:ml-64 lg:ml-64"
         }`}
       >
-        <main className="py-8 animate-fade-in bg-gradient-to-br from-gray-50 to-white min-h-screen">
+        <main className="py-8 bg-gradient-to-br from-gray-50 to-white min-h-screen">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-8">
             {/* Page header for better navigation context */}
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -190,7 +190,7 @@ export const Layout: React.FC<LayoutProps> = ({
             </div>
 
             {/* Main content */}
-            <div className="animate-slide-up">{children}</div>
+            <div key={activeTab} className="animate-fade-in">{children}</div>
           </div>
         </main>
       </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Bell, X, Check, CheckCheck, ExternalLink } from "lucide-react";
+import { Bell, X, Check, CheckCheck, ExternalLink, Settings, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/contexts/notification-context";
 import { useLanguage } from "@/contexts/language-context";
@@ -21,8 +21,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     markAllAsRead,
     loading,
     isLive,
+    pushNotificationsEnabled,
+    enablePushNotifications,
+    disablePushNotifications,
   } = useNotifications();
   const { t } = useLanguage();
+  const [showSettings, setShowSettings] = React.useState(false);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -53,16 +57,16 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black bg-opacity-25"
+        className="absolute inset-0 bg-black bg-opacity-25 transition-opacity duration-300"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
-      <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl">
+      <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl animate-slide-in-right">
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
@@ -76,21 +80,70 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   LIVE
                 </span>
               )}
+              {pushNotificationsEnabled && (
+                <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 border border-blue-200">
+                  PUSH
+                </span>
+              )}
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSettings(!showSettings)}
+                className="text-gray-400 hover:text-gray-600"
+                title="Notification Settings"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
+
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">Notification Settings</h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {pushNotificationsEnabled ? (
+                      <Volume2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <VolumeX className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span className="text-sm text-gray-700">Push Notifications</span>
+                  </div>
+                  <Button
+                    variant={pushNotificationsEnabled ? "outline" : "primary"}
+                    size="sm"
+                    onClick={pushNotificationsEnabled ? disablePushNotifications : enablePushNotifications}
+                    className="text-xs"
+                  >
+                    {pushNotificationsEnabled ? "Disable" : "Enable"}
+                  </Button>
+                </div>
+                <p className="text-xs text-gray-500">
+                  {pushNotificationsEnabled 
+                    ? "You'll receive browser notifications for new messages"
+                    : "Enable to receive browser notifications for new messages"
+                  }
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           {unreadCount > 0 && (
