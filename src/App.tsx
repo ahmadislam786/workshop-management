@@ -7,8 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Layout } from "@/components/shared/Layout";
 import { AdminDashboard } from "@/components/features/AdminDashboard";
 import { TechnicianDashboard } from "@/components/features/TechnicianDashboard";
-import { JobList } from "@/components/features/jobs/JobList";
-import { JobCalendar } from "@/components/features/jobs/JobCalendar";
+import { AppointmentList } from "@/components/features/appointments/AppointmentList";
 import { CustomerList } from "@/components/features/customers/CustomerList";
 import { TechnicianList } from "@/components/features/technicians/TechnicianList";
 import { VehicleList } from "@/components/features/vehicles/VehicleList";
@@ -34,7 +33,7 @@ const AppContent: React.FC = () => {
         case "dashboard":
           return <AdminDashboard onNavigate={setActiveTab} />;
         case "jobs":
-          return <JobList />;
+          return <AppointmentList />;
         case "leitstand":
           return <Leitstand />;
         case "plantafel":
@@ -42,7 +41,7 @@ const AppContent: React.FC = () => {
         case "dayview":
           return <DayViewPlanner />;
         case "calendar":
-          return <JobCalendar />;
+          return <div>Calendar view not implemented</div>;
         case "customers":
           return <CustomerList />;
         case "vehicles":
@@ -58,7 +57,7 @@ const AppContent: React.FC = () => {
         case "dashboard":
           return <TechnicianDashboard />;
         case "jobs":
-          return <JobList />;
+          return <AppointmentList />;
         default:
           return <TechnicianDashboard />;
       }

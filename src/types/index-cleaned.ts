@@ -1,5 +1,5 @@
 // =====================================================
-// TYPE DEFINITIONS
+// TYPE DEFINITIONS - CLEANED VERSION
 // =====================================================
 
 /**
@@ -22,7 +22,7 @@ export interface Profile {
 }
 
 /**
- * Customer interface - Cleaned (removed whatsapp)
+ * Customer interface - Simplified (removed whatsapp)
  */
 export interface Customer {
   id: string;
@@ -47,7 +47,7 @@ export interface Vehicle {
 }
 
 /**
- * Technician interface - Cleaned (removed specialization, job_count)
+ * Technician interface - Simplified (removed specialization, job_count)
  */
 export interface Technician {
   id: string;
@@ -64,17 +64,7 @@ export interface Technician {
 }
 
 /**
- * Job status types (legacy - for backward compatibility)
- */
-export type JobStatus =
-  | "pending"
-  | "scheduled"
-  | "in_progress"
-  | "completed"
-  | "cancelled";
-
-/**
- * Appointment status types (new system)
+ * Appointment status types
  */
 export type AppointmentStatus =
   | "new"
@@ -96,11 +86,6 @@ export type Priority = "low" | "normal" | "high" | "urgent";
 export type AbsenceType = "vacation" | "sick" | "training" | "other";
 
 /**
- * Job source types
- */
-export type JobSource = "email" | "manual";
-
-/**
  * Service interface
  */
 export interface Service {
@@ -113,7 +98,7 @@ export interface Service {
 }
 
 /**
- * Part interface - Cleaned (removed part_number, min_stock_level, unit_price)
+ * Part interface - Simplified (removed part_number, min_stock_level, unit_price)
  */
 export interface Part {
   id: string;
@@ -138,7 +123,7 @@ export interface TechnicianAbsence {
 }
 
 /**
- * Appointment interface - Cleaned (removed sla_promised_at, flags)
+ * Appointment interface - Simplified (removed sla_promised_at, flags)
  */
 export interface Appointment {
   id: string;
@@ -178,7 +163,44 @@ export interface ScheduleAssignment {
   technician?: Technician;
 }
 
-// Job interface removed - replaced by Appointment interface
+/**
+ * Skill interface
+ */
+export interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  description?: string;
+  created_at: string;
+}
+
+/**
+ * Technician skill interface
+ */
+export interface TechnicianSkill {
+  id: string;
+  technician_id: string;
+  skill_id: string;
+  proficiency_level: number;
+  created_at: string;
+  // Related data (populated by joins)
+  skill?: Skill;
+  technician?: Technician;
+}
+
+/**
+ * Notification interface
+ */
+export interface Notification {
+  id: string;
+  user_id: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  is_read: boolean;
+  action_link?: string;
+  action_label?: string;
+  created_at: string;
+}
 
 /**
  * Form data interfaces for better type safety
@@ -205,17 +227,16 @@ export interface CreateVehicleData {
   customer_id: string;
 }
 
-export interface CreateJobData {
+export interface CreateAppointmentData {
+  date: string;
   customer_id: string;
   vehicle_id: string;
-  technician_id?: string;
-  service_type: string;
-  time_frame?: string;
-  scheduled_start?: string;
-  scheduled_end?: string;
-  parts_needed?: string;
-  duration_hours?: number;
+  service_id?: string;
+  title: string;
   notes?: string;
+  aw_estimate?: number;
+  priority?: Priority;
+  required_skills?: string[];
 }
 
 /**
@@ -234,9 +255,3 @@ export interface UserCreationResult {
   requiresEmailConfirmation?: boolean;
   error?: string;
 }
-
-// Removed scans module per product decision
-
-// Team interface removed - teams feature not implemented
-
-// Removed DamageReport interface since the feature is deleted

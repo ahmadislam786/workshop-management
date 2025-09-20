@@ -28,7 +28,6 @@ export const TechnicianList: React.FC = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    specialization: "",
     phone: "",
   });
   const { t } = useLanguage();
@@ -87,7 +86,6 @@ export const TechnicianList: React.FC = () => {
     setFormData({
       name: technician.name,
       email: technician.email,
-      specialization: technician.specialization || "",
       phone: technician.phone || "",
     });
     setShowForm(true);
@@ -114,7 +112,6 @@ export const TechnicianList: React.FC = () => {
     setFormData({
       name: "",
       email: "",
-      specialization: "",
       phone: "",
     });
   };
@@ -122,10 +119,7 @@ export const TechnicianList: React.FC = () => {
   const filteredTechnicians = technicians.filter(
     technician =>
       technician.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      technician.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      technician.specialization
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      technician.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -185,13 +179,7 @@ export const TechnicianList: React.FC = () => {
                 }
                 required
               />
-              <Input
-                placeholder={t("technicians.specialization")}
-                value={formData.specialization}
-                onChange={e =>
-                  setFormData({ ...formData, specialization: e.target.value })
-                }
-              />
+              {/* Specialization field removed */}
               <Input
                 placeholder={t("technicians.phone")}
                 value={formData.phone}
@@ -247,11 +235,7 @@ export const TechnicianList: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {technician.name}
                       </h3>
-                      {technician.specialization && (
-                        <p className="text-sm text-blue-600 font-medium">
-                          {technician.specialization}
-                        </p>
-                      )}
+                      {/* Specialization display removed */}
                     </div>
                   </div>
                   <div className="space-y-2 text-sm text-gray-600">

@@ -1,5 +1,5 @@
--- Workshop Planner Database Schema
--- Updated to match the new requirements for AW system, appointments, and day-view planner
+-- Workshop Planner Database Schema - CLEANED VERSION
+-- Removed unused columns and tables for better performance and maintainability
 
 -- =============================================
 -- CLEANUP AND PREPARATION
@@ -11,6 +11,8 @@ DROP TABLE IF EXISTS technician_absences CASCADE;
 DROP TABLE IF EXISTS appointments CASCADE;
 DROP TABLE IF EXISTS notifications CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS jobs CASCADE; -- Remove legacy jobs table
+DROP TABLE IF EXISTS teams CASCADE; -- Remove unused teams table
 
 -- =============================================
 -- CORE TABLES
@@ -25,16 +27,14 @@ CREATE TABLE IF NOT EXISTS profile (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Technicians table - Updated with AW capacity and shift times
+-- Technicians table - Simplified (removed specialization, job_count)
 CREATE TABLE IF NOT EXISTS technicians (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   profile_id UUID REFERENCES profile(id) ON DELETE SET NULL,
   name VARCHAR(100) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
-  specialization TEXT,
   phone VARCHAR(20),
-  job_count INTEGER DEFAULT 0,
-  -- New fields for AW system
+  -- AW system fields
   shift_start TIME DEFAULT '07:00:00',
   shift_end TIME DEFAULT '18:00:00',
   aw_capacity_per_day INTEGER DEFAULT 80, -- Default 80 AW per day
@@ -56,12 +56,11 @@ CREATE TABLE IF NOT EXISTS technician_absences (
   UNIQUE(technician_id, date, from_time, to_time)
 );
 
--- Customers table
+-- Customers table - Simplified (removed whatsapp)
 CREATE TABLE IF NOT EXISTS customers (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255),
-  whatsapp VARCHAR(20),
   phone VARCHAR(20),
   status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -88,19 +87,16 @@ CREATE TABLE IF NOT EXISTS services (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Parts table
+-- Parts table - Simplified (removed part_number, min_stock_level, unit_price)
 CREATE TABLE IF NOT EXISTS parts (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  part_number VARCHAR(100),
   description TEXT,
   stock_quantity INTEGER DEFAULT 0,
-  min_stock_level INTEGER DEFAULT 0,
-  unit_price DECIMAL(10,2),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Appointments table (replaces jobs with AW system)
+-- Appointments table - Simplified (removed sla_promised_at, flags)
 CREATE TABLE IF NOT EXISTS appointments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   date DATE NOT NULL,
@@ -113,8 +109,6 @@ CREATE TABLE IF NOT EXISTS appointments (
   priority VARCHAR(20) DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
   status VARCHAR(20) DEFAULT 'new' CHECK (status IN ('new', 'scheduled', 'in_progress', 'paused', 'waiting_parts', 'done', 'delivered')),
   required_skills TEXT[], -- Array of skill names
-  sla_promised_at TIMESTAMP WITH TIME ZONE,
-  flags TEXT[], -- Array of flags like 'parts_ordered', 'customer_waiting', etc.
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -131,25 +125,6 @@ CREATE TABLE IF NOT EXISTS schedule_assignments (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(appointment_id, technician_id, start_time)
-);
-
--- Keep existing jobs table for backward compatibility (will be migrated to appointments)
-CREATE TABLE IF NOT EXISTS jobs (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-  vehicle_id UUID NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
-  technician_id UUID REFERENCES technicians(id) ON DELETE SET NULL,
-  service_type VARCHAR(255) NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'scheduled', 'in_progress', 'completed', 'cancelled')),
-  time_frame VARCHAR(100),
-  scheduled_start TIMESTAMP WITH TIME ZONE,
-  scheduled_end TIMESTAMP WITH TIME ZONE,
-  parts_needed TEXT,
-  duration_hours DECIMAL(4,2),
-  ai_duration_hour DECIMAL(4,2),
-  source VARCHAR(20) DEFAULT 'manual' CHECK (source IN ('email', 'manual')),
-  notes TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =============================================
@@ -176,7 +151,7 @@ CREATE TABLE IF NOT EXISTS technician_skills (
 );
 
 -- =============================================
--- ADDITIONAL FEATURE TABLES
+-- NOTIFICATIONS TABLE
 -- =============================================
 
 -- Notifications table
@@ -188,16 +163,6 @@ CREATE TABLE notifications (
   is_read BOOLEAN DEFAULT FALSE,
   action_link TEXT,
   action_label VARCHAR(100),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Teams table (for future use or alternative grouping)
-CREATE TABLE IF NOT EXISTS teams (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  color VARCHAR(7) DEFAULT '#3B82F6',
-  description TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -230,13 +195,6 @@ CREATE INDEX IF NOT EXISTS idx_schedule_assignments_end_time ON schedule_assignm
 CREATE INDEX IF NOT EXISTS idx_technician_absences_technician_id ON technician_absences(technician_id);
 CREATE INDEX IF NOT EXISTS idx_technician_absences_date ON technician_absences(date);
 
--- Job indexes (for backward compatibility)
-CREATE INDEX IF NOT EXISTS idx_jobs_customer_id ON jobs(customer_id);
-CREATE INDEX IF NOT EXISTS idx_jobs_vehicle_id ON jobs(vehicle_id);
-CREATE INDEX IF NOT EXISTS idx_jobs_technician_id ON jobs(technician_id);
-CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status);
-CREATE INDEX IF NOT EXISTS idx_jobs_created_at ON jobs(created_at);
-
 -- Skill-based indexes
 CREATE INDEX IF NOT EXISTS idx_skills_category ON skills(category);
 CREATE INDEX IF NOT EXISTS idx_technician_skills_technician_id ON technician_skills(technician_id);
@@ -250,13 +208,12 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 -- VIEWS FOR EASY QUERYING
 -- =============================================
 
--- Technician skills view
+-- Technician skills view - Simplified
 CREATE OR REPLACE VIEW technician_skills_view AS
 SELECT 
   t.id,
   t.name,
   t.email,
-  t.job_count,
   t.shift_start,
   t.shift_end,
   t.aw_capacity_per_day,
@@ -275,9 +232,9 @@ SELECT
 FROM technicians t
 LEFT JOIN technician_skills ts ON t.id = ts.technician_id
 LEFT JOIN skills s ON ts.skill_id = s.id
-GROUP BY t.id, t.name, t.email, t.job_count, t.shift_start, t.shift_end, t.aw_capacity_per_day, t.active, t.created_at, t.updated_at;
+GROUP BY t.id, t.name, t.email, t.shift_start, t.shift_end, t.aw_capacity_per_day, t.active, t.created_at, t.updated_at;
 
--- Appointment details view with customer and vehicle info
+-- Appointment details view with customer and vehicle info - Simplified
 CREATE OR REPLACE VIEW appointment_details_view AS
 SELECT 
   a.id,
@@ -288,8 +245,6 @@ SELECT
   a.priority,
   a.status,
   a.required_skills,
-  a.sla_promised_at,
-  a.flags,
   a.created_at,
   a.updated_at,
   c.name as customer_name,
@@ -426,7 +381,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to get appointments for day view
+-- Function to get appointments for day view - Simplified
 CREATE OR REPLACE FUNCTION get_day_appointments(
   target_date DATE
 ) RETURNS TABLE (
@@ -438,8 +393,6 @@ CREATE OR REPLACE FUNCTION get_day_appointments(
   priority TEXT,
   status TEXT,
   required_skills TEXT[],
-  sla_promised_at TIMESTAMP WITH TIME ZONE,
-  flags TEXT[],
   technician_id UUID,
   technician_name TEXT,
   start_time TIMESTAMP WITH TIME ZONE,
@@ -457,8 +410,6 @@ BEGIN
     a.priority::TEXT,
     a.status::TEXT,
     a.required_skills,
-    a.sla_promised_at,
-    a.flags,
     sa.technician_id,
     t.name::TEXT,
     sa.start_time,
@@ -528,8 +479,6 @@ ALTER TABLE parts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE technician_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
-ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "Anyone can view profile" ON profile;
@@ -556,10 +505,6 @@ DROP POLICY IF EXISTS "Anyone can view technician skills" ON technician_skills;
 DROP POLICY IF EXISTS "Anyone can manage technician skills" ON technician_skills;
 DROP POLICY IF EXISTS "Anyone can view notifications" ON notifications;
 DROP POLICY IF EXISTS "Anyone can manage notifications" ON notifications;
-DROP POLICY IF EXISTS "Anyone can view teams" ON teams;
-DROP POLICY IF EXISTS "Anyone can manage teams" ON teams;
-DROP POLICY IF EXISTS "Anyone can view jobs" ON jobs;
-DROP POLICY IF EXISTS "Anyone can manage jobs" ON jobs;
 
 -- Simplified RLS policies (no authentication dependencies)
 -- These policies allow full access for development - customize for production
@@ -648,20 +593,6 @@ CREATE POLICY "Anyone can view notifications" ON notifications
 CREATE POLICY "Anyone can manage notifications" ON notifications
   FOR ALL USING (true);
 
--- Teams policies
-CREATE POLICY "Anyone can view teams" ON teams
-  FOR SELECT USING (true);
-
-CREATE POLICY "Anyone can manage teams" ON teams
-  FOR ALL USING (true);
-
--- Jobs policies (for backward compatibility)
-CREATE POLICY "Anyone can view jobs" ON jobs
-  FOR SELECT USING (true);
-
-CREATE POLICY "Anyone can manage jobs" ON jobs
-  FOR ALL USING (true);
-
 -- =============================================
 -- SAMPLE DATA INSERTION
 -- =============================================
@@ -688,22 +619,22 @@ ON CONFLICT (name) DO NOTHING;
 DELETE FROM technician_skills;
 DELETE FROM technicians;
 
--- Insert technicians with AW capacity
-INSERT INTO technicians (name, email, specialization, job_count, shift_start, shift_end, aw_capacity_per_day, active, created_at, updated_at) VALUES
+-- Insert technicians with AW capacity (simplified)
+INSERT INTO technicians (name, email, shift_start, shift_end, aw_capacity_per_day, active, created_at, updated_at) VALUES
 -- Row 1
-('Markus', 'markus@db-auto.de', 'timing belt, brakes, suspension, failure search, glass, tyres', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Viktor', 'viktor@db-auto.de', 'timing belt, brakes, suspension, failure search, glass, tyres, bodywork', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Andi', 'andi@db-auto.de', 'body work, brakes, suspension, failure search, glass, tyres', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Markus', 'markus@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Viktor', 'viktor@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Andi', 'andi@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
 
 -- Row 2
-('Kai', 'kai@db-auto.de', 'brakes, suspension, failure search, glass, tyres, inspection', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Anton', 'anton@db-auto.de', 'timing belt, brakes, suspension, failure search, glass, tyres', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Michel', 'michel@db-auto.de', 'brakes, suspension, glass, tyres, inspection', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Kai', 'kai@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Anton', 'anton@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Michel', 'michel@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
 
 -- Row 3
-('Jakob', 'jakob@db-auto.de', 'brakes, suspension, glass, tyres, inspection', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Niko', 'niko@db-auto.de', 'timing belt, brakes, suspension, failure search, glass, tyres, bodywork', 0, '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
-('Ahmad', 'ahmad@db-auto.de', 'brakes, suspension, glass, tyres, inspection', 1, '07:00:00', '18:00:00', 80, true, NOW(), NOW());
+('Jakob', 'jakob@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Niko', 'niko@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW()),
+('Ahmad', 'ahmad@db-auto.de', '07:00:00', '18:00:00', 80, true, NOW(), NOW());
 
 -- Function to assign skills to technicians
 CREATE OR REPLACE FUNCTION assign_technician_skills(
@@ -764,19 +695,19 @@ INSERT INTO services (name, description, default_aw_estimate, required_skills) V
 
 ON CONFLICT DO NOTHING;
 
--- Insert sample parts
-INSERT INTO parts (name, part_number, description, stock_quantity, min_stock_level, unit_price) VALUES
-('Brake Pads Front', 'BP-F001', 'Front brake pads for most vehicles', 25, 5, 45.99),
-('Brake Discs Front', 'BD-F001', 'Front brake discs', 15, 3, 89.99),
-('Oil Filter', 'OF-001', 'Standard oil filter', 50, 10, 12.99),
-('Engine Oil 5W-30', 'EO-5W30', 'Synthetic engine oil 5W-30', 30, 8, 24.99),
-('Timing Belt Kit', 'TB-KIT001', 'Complete timing belt replacement kit', 8, 2, 189.99),
-('Windshield Glass', 'WG-001', 'Standard windshield glass', 5, 1, 299.99),
-('Tire 205/55R16', 'T-2055516', 'All-season tire 205/55R16', 20, 4, 89.99)
+-- Insert sample parts (simplified)
+INSERT INTO parts (name, description, stock_quantity) VALUES
+('Brake Pads Front', 'Front brake pads for most vehicles', 25),
+('Brake Discs Front', 'Front brake discs', 15),
+('Oil Filter', 'Standard oil filter', 50),
+('Engine Oil 5W-30', 'Synthetic engine oil 5W-30', 30),
+('Timing Belt Kit', 'Complete timing belt replacement kit', 8),
+('Windshield Glass', 'Standard windshield glass', 5),
+('Tire 205/55R16', 'All-season tire 205/55R16', 20)
 
 ON CONFLICT DO NOTHING;
 
--- Insert sample customers
+-- Insert sample customers (simplified)
 INSERT INTO customers (name, email, phone, status, created_at) VALUES
 ('Hans Mueller', 'hans.mueller@email.com', '+49 123 456 7890', 'active', NOW()),
 ('Maria Schmidt', 'maria.schmidt@email.com', '+49 123 456 7891', 'active', NOW()),
@@ -796,13 +727,13 @@ INSERT INTO vehicles (make, model, license_plate, year, customer_id, created_at)
 
 ON CONFLICT (license_plate) DO NOTHING;
 
--- Insert sample appointments
-INSERT INTO appointments (date, customer_id, vehicle_id, service_id, title, notes, aw_estimate, priority, status, required_skills, sla_promised_at, flags, created_at, updated_at) VALUES
-(CURRENT_DATE, (SELECT id FROM customers WHERE email = 'hans.mueller@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-AB 123'), (SELECT id FROM services WHERE name = 'Brake Service'), 'Front Brake Service', 'Customer reported squeaking noise', 40, 'high', 'new', ARRAY['brakes'], NOW() + INTERVAL '2 days', ARRAY['parts_ordered'], NOW(), NOW()),
-(CURRENT_DATE + INTERVAL '1 day', (SELECT id FROM customers WHERE email = 'maria.schmidt@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-CD 456'), (SELECT id FROM services WHERE name = 'Oil Change'), 'Regular Oil Change', 'Regular maintenance', 10, 'normal', 'new', ARRAY['inspection'], NOW() + INTERVAL '1 day', ARRAY[]::text[], NOW(), NOW()),
-(CURRENT_DATE + INTERVAL '2 days', (SELECT id FROM customers WHERE email = 'peter.weber@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-EF 789'), (SELECT id FROM services WHERE name = 'Timing Belt'), 'Timing Belt Replacement', 'Preventive maintenance', 60, 'normal', 'new', ARRAY['timing belt'], NOW() + INTERVAL '3 days', ARRAY[]::text[], NOW(), NOW()),
-(CURRENT_DATE + INTERVAL '1 day', (SELECT id FROM customers WHERE email = 'anna.fischer@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-GH 012'), (SELECT id FROM services WHERE name = 'Suspension Check'), 'Suspension Inspection', 'Customer complaint about noise', 30, 'normal', 'new', ARRAY['suspension'], NOW() + INTERVAL '2 days', ARRAY[]::text[], NOW(), NOW()),
-(CURRENT_DATE, (SELECT id FROM customers WHERE email = 'thomas.wagner@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-IJ 345'), (SELECT id FROM services WHERE name = 'Glass Replacement'), 'Windshield Replacement', 'Crack repair', 20, 'urgent', 'new', ARRAY['glass'], NOW() + INTERVAL '1 day', ARRAY['customer_waiting'], NOW(), NOW())
+-- Insert sample appointments (simplified)
+INSERT INTO appointments (date, customer_id, vehicle_id, service_id, title, notes, aw_estimate, priority, status, required_skills, created_at, updated_at) VALUES
+(CURRENT_DATE, (SELECT id FROM customers WHERE email = 'hans.mueller@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-AB 123'), (SELECT id FROM services WHERE name = 'Brake Service'), 'Front Brake Service', 'Customer reported squeaking noise', 40, 'high', 'new', ARRAY['brakes'], NOW(), NOW()),
+(CURRENT_DATE + INTERVAL '1 day', (SELECT id FROM customers WHERE email = 'maria.schmidt@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-CD 456'), (SELECT id FROM services WHERE name = 'Oil Change'), 'Regular Oil Change', 'Regular maintenance', 10, 'normal', 'new', ARRAY['inspection'], NOW(), NOW()),
+(CURRENT_DATE + INTERVAL '2 days', (SELECT id FROM customers WHERE email = 'peter.weber@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-EF 789'), (SELECT id FROM services WHERE name = 'Timing Belt'), 'Timing Belt Replacement', 'Preventive maintenance', 60, 'normal', 'new', ARRAY['timing belt'], NOW(), NOW()),
+(CURRENT_DATE + INTERVAL '1 day', (SELECT id FROM customers WHERE email = 'anna.fischer@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-GH 012'), (SELECT id FROM services WHERE name = 'Suspension Check'), 'Suspension Inspection', 'Customer complaint about noise', 30, 'normal', 'new', ARRAY['suspension'], NOW(), NOW()),
+(CURRENT_DATE, (SELECT id FROM customers WHERE email = 'thomas.wagner@email.com'), (SELECT id FROM vehicles WHERE license_plate = 'M-IJ 345'), (SELECT id FROM services WHERE name = 'Glass Replacement'), 'Windshield Replacement', 'Crack repair', 20, 'urgent', 'new', ARRAY['glass'], NOW(), NOW())
 
 ON CONFLICT DO NOTHING;
 
@@ -819,15 +750,6 @@ INSERT INTO notifications (user_id, message, type, is_read, created_at) VALUES
 ('admin', 'New appointment created for Hans Mueller', 'info', false, NOW()),
 ('admin', 'Parts ordered for brake service', 'success', false, NOW()),
 ('admin', 'Technician Markus on vacation tomorrow', 'warning', false, NOW());
-
--- Insert sample teams
-INSERT INTO teams (name, color, description, is_active, created_at) VALUES
-('Brake Specialists', '#FF6B6B', 'Team specializing in brake systems', true, NOW()),
-('Engine Team', '#4ECDC4', 'Team handling engine and timing belt work', true, NOW()),
-('Bodywork Team', '#45B7D1', 'Team for bodywork and glass repairs', true, NOW()),
-('Inspection Team', '#96CEB4', 'Team for vehicle inspections and diagnostics', true, NOW())
-
-ON CONFLICT DO NOTHING;
 
 -- =============================================
 -- VERIFICATION QUERIES

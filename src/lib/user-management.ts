@@ -100,9 +100,7 @@ export class UserManagementService {
               profile_id: profileData.id,
               name: userData.name,
               email: userData.email,
-              specialization: userData.specialization || "",
               phone: userData.phone || null,
-              job_count: 0,
             },
           ]);
 
@@ -194,9 +192,7 @@ export class UserManagementService {
               profile_id: profileData.id,
               name: userData.name,
               email: userData.email,
-              specialization: userData.specialization || "",
               phone: userData.phone || null,
-              job_count: 0,
             },
           ]);
 
@@ -239,7 +235,7 @@ export class UserManagementService {
         profiles?.filter(p => p.role === "technician").length || 0;
 
       return { admins, technicians };
-    } catch (error) {
+    } catch {
       return { admins: 0, technicians: 0 };
     }
   }

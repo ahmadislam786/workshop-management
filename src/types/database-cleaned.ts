@@ -291,7 +291,6 @@ export interface Database {
           created_at?: string;
         };
       };
-      // Removed damage_reports and scans tables per product decision
       notifications: {
         Row: {
           id: string;
@@ -424,20 +423,6 @@ export interface Database {
       };
     };
     Functions: {
-      find_technicians_by_skills: {
-        Args: {
-          required_skills: string[];
-        };
-        Returns: {
-          technician_id: string;
-          technician_name: string;
-          email: string;
-          matched_skills: string;
-          skill_match_count: number;
-          total_skills: number;
-          match_percentage: number;
-        }[];
-      };
       get_technician_available_aw: {
         Args: {
           tech_id: string;
@@ -472,6 +457,20 @@ export interface Database {
           start_time: string | null;
           end_time: string | null;
           aw_planned: number | null;
+        }[];
+      };
+      find_technicians_by_skills: {
+        Args: {
+          required_skills: string[];
+        };
+        Returns: {
+          technician_id: string;
+          technician_name: string;
+          email: string;
+          matched_skills: string;
+          skill_match_count: number;
+          total_skills: number;
+          match_percentage: number;
         }[];
       };
       get_job_recommendations_for_technician: {

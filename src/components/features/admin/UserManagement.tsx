@@ -12,7 +12,6 @@ interface UserFormData {
   password: string;
   confirmPassword: string;
   name: string;
-  specialization: string;
   phone: string;
   role: "admin" | "technician";
 }
@@ -30,7 +29,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
     password: "",
     confirmPassword: "",
     name: "",
-    specialization: "",
     phone: "",
     role: "technician",
   });
@@ -41,7 +39,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
     try {
       const counts = await UserManagementService.getUserCounts();
       setUserCounts(counts);
-    } catch (error) {
+    } catch {
       // Silent error handling
     }
   };
@@ -56,7 +54,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
       password: "",
       confirmPassword: "",
       name: "",
-      specialization: "",
       phone: "",
       role: "technician",
     });
@@ -83,12 +80,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
     if (!formData.name) newErrors.name = "Name is required";
     if (!formData.role) newErrors.role = "Role is required";
 
-    // Role-specific validations
-    if (formData.role === "technician") {
-      if (!formData.specialization) {
-        newErrors.specialization = "Specialization is required for technicians";
-      }
-    }
+    // Role-specific validations removed - specialization field removed
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -107,8 +99,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
         password: formData.password,
         name: formData.name,
         role: formData.role,
-        specialization:
-          formData.role === "technician" ? formData.specialization : undefined,
         phone: formData.phone || undefined,
       };
 
@@ -138,7 +128,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
       } else {
         toast.error(result.error || "Failed to create user account");
       }
-    } catch (error) {
+    } catch {
       setLoading(false);
     } finally {
       setLoading(false);
@@ -340,24 +330,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ onClose }) => {
                   </div>
                 </div>
 
-                {/* Role-specific fields */}
-                {formData.role === "technician" && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specialization *
-                    </label>
-                    <Input
-                      type="text"
-                      value={formData.specialization}
-                      onChange={e =>
-                        handleInputChange("specialization", e.target.value)
-                      }
-                      placeholder="e.g., Engine Repair, Electrical Systems, Brakes"
-                      error={errors.specialization}
-                      required
-                    />
-                  </div>
-                )}
+                {/* Role-specific fields removed - specialization field removed */}
 
                 {/* Submit Button */}
                 <div className="flex justify-end space-x-4 pt-4">

@@ -1,18 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useAppointments, useScheduleAssignments } from "@/hooks/useAppointments";
+import {
+  useAppointments,
+  useScheduleAssignments,
+} from "@/hooks/useAppointments";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/language-context";
-import { JobCard } from "./JobCard";
-import { JobForm } from "./JobForm";
+import { AppointmentCard } from "./AppointmentCard";
+// JobForm removed - appointments are created through other interfaces
 import { Button } from "@/components/ui/Button";
 import { Plus, Wrench } from "lucide-react";
 
-export const JobList: React.FC = () => {
+export const AppointmentList: React.FC = () => {
   const { appointments, loading } = useAppointments();
   const { assignments } = useScheduleAssignments();
   const { profile, technician } = useAuth();
   const { t } = useLanguage();
-  const [showForm, setShowForm] = useState(false);
+  // showForm removed - appointments are created through other interfaces
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<string>("created_at_desc");
   const [viewMode, setViewMode] = useState<"regular" | "compact" | "detailed">(
@@ -33,8 +36,8 @@ export const JobList: React.FC = () => {
       const assignedAppointmentIds = assignments
         .filter(assignment => assignment.technician_id === technician.id)
         .map(assignment => assignment.appointment_id);
-      
-      return appointments.filter(appointment => 
+
+      return appointments.filter(appointment =>
         assignedAppointmentIds.includes(appointment.id)
       );
     }
@@ -63,7 +66,7 @@ export const JobList: React.FC = () => {
 
   // Listen for highlight-related events and add a temporary ring
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: CustomEvent) => {
       const { customerId, vehicleId } = e.detail || {};
       document
         .querySelectorAll<HTMLElement>("[data-job-customer]")
@@ -80,9 +83,9 @@ export const JobList: React.FC = () => {
           }
         });
     };
-    window.addEventListener("highlight-related", handler as any);
+    window.addEventListener("highlight-related", handler as EventListener);
     return () =>
-      window.removeEventListener("highlight-related", handler as any);
+      window.removeEventListener("highlight-related", handler as EventListener);
   }, []);
 
   if (loading) {
@@ -101,12 +104,7 @@ export const JobList: React.FC = () => {
             ? t("jobs.myJobs")
             : t("jobs.allJobs")}
         </h2>
-        {profile?.role === "admin" && (
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t("jobs.newJob")}
-          </Button>
-        )}
+        {/* New appointment button removed - appointments are created through other interfaces */}
       </div>
 
       {/* View mode switch */}
@@ -178,12 +176,16 @@ export const JobList: React.FC = () => {
           }`}
         >
           {filteredAppointments.map(appointment => (
-            <JobCard key={appointment.id} job={appointment} mode={viewMode} />
+            <AppointmentCard
+              key={appointment.id}
+              job={appointment}
+              mode={viewMode}
+            />
           ))}
         </div>
       )}
 
-      {showForm && <JobForm onClose={() => setShowForm(false)} />}
+      {/* JobForm removed - appointments are created through other interfaces */}
     </div>
   );
 };

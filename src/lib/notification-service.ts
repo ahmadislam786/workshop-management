@@ -19,10 +19,7 @@ interface ProfileData {
   user_id: string;
 }
 
-interface ScheduleAssignmentData {
-  technician_id: string;
-  technician?: TechnicianData;
-}
+// ScheduleAssignmentData interface removed - not used
 
 export interface NotificationData {
   message: string;

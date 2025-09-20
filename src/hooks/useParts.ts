@@ -98,7 +98,8 @@ export const useParts = () => {
   }, [parts]);
 
   const getLowStockParts = useCallback(() => {
-    return parts.filter(part => part.stock_quantity <= part.min_stock_level);
+    // Low stock threshold removed - using fixed threshold of 5
+    return parts.filter(part => part.stock_quantity <= 5);
   }, [parts]);
 
   const updateStockQuantity = useCallback(async (id: string, newQuantity: number) => {
@@ -130,7 +131,6 @@ export const useParts = () => {
     const searchTerm = query.toLowerCase();
     return parts.filter(part => 
       part.name.toLowerCase().includes(searchTerm) ||
-      (part.part_number && part.part_number.toLowerCase().includes(searchTerm)) ||
       (part.description && part.description.toLowerCase().includes(searchTerm))
     );
   }, [parts]);

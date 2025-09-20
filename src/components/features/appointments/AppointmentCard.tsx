@@ -16,7 +16,7 @@ import {
   CalendarX,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { JobForm } from "./JobForm";
+// JobForm removed - appointments are edited through other interfaces
 import {
   getStatusColor,
   formatDateTimeLocal,
@@ -62,7 +62,7 @@ const convertToJobLike = (item: Job | Appointment) => {
   }
 };
 
-export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
+export const AppointmentCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
   const { profile } = useAuth();
   const { updateAppointment } = useAppointments();
   const [showEditForm, setShowEditForm] = useState(false);
@@ -320,8 +320,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, mode = "regular" }) => {
         </div>
       )}
 
-      {/* Edit Form Modal */}
-      {showEditForm && <JobForm job={jobLike} onClose={handleEditClose} />}
+      {/* Edit Form Modal - JobForm removed */}
       {showDetails && (
         <div
           className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"

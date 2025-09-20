@@ -31,7 +31,6 @@ export const CustomerList: React.FC = () => {
     name: "",
     email: "",
     phone: "",
-    whatsapp: "",
     status: "active" as "active" | "inactive",
   });
 
@@ -110,7 +109,6 @@ export const CustomerList: React.FC = () => {
       name: customer.name,
       email: customer.email || "",
       phone: customer.phone || "",
-      whatsapp: customer.whatsapp || "",
       status: customer.status,
     });
     setShowForm(true);
@@ -135,7 +133,6 @@ export const CustomerList: React.FC = () => {
       name: "",
       email: "",
       phone: "",
-      whatsapp: "",
       status: "active",
     });
   };
@@ -229,13 +226,7 @@ export const CustomerList: React.FC = () => {
                   setFormData({ ...formData, phone: e.target.value })
                 }
               />
-              <Input
-                placeholder="WhatsApp"
-                value={formData.whatsapp}
-                onChange={e =>
-                  setFormData({ ...formData, whatsapp: e.target.value })
-                }
-              />
+              {/* WhatsApp field removed */}
               <select
                 value={formData.status}
                 onChange={e =>
@@ -306,12 +297,7 @@ export const CustomerList: React.FC = () => {
                         {customer.phone}
                       </div>
                     )}
-                    {customer.whatsapp && (
-                      <div className="flex items-center">
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        {customer.whatsapp}
-                      </div>
-                    )}
+                    {/* WhatsApp display removed */}
                   </div>
 
                   {/* Vehicle Information */}
