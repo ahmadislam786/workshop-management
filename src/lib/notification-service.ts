@@ -153,7 +153,13 @@ export class NotificationService {
         .eq("id", data.technician_id)
         .single();
 
-      if (techError) throw techError;
+      if (techError) {
+        console.warn(
+          "Could not fetch technician profile for notification:",
+          techError
+        );
+        return; // Skip notification if we can't get the profile
+      }
 
       const userId = extractUserId(technician?.profile);
       if (userId) {
@@ -163,8 +169,8 @@ export class NotificationService {
         });
       }
     } catch (error) {
-      console.error("Error notifying technician:", error);
-      throw error;
+      console.warn("Error notifying technician (non-critical):", error);
+      // Don't throw error - notifications are not critical for core functionality
     }
   }
 
@@ -251,7 +257,11 @@ export class NotificationService {
         });
       }
     } catch (error) {
-      console.error("Error notifying appointment status change:", error);
+      console.warn(
+        "Error notifying appointment status change (non-critical):",
+        error
+      );
+      // Don't throw error - notifications are not critical for core functionality
     }
   }
 

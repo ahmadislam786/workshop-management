@@ -60,13 +60,6 @@ export const useAppointments = () => {
         setAppointments(prev => [data, ...prev]);
         toast.success("Appointment created successfully");
 
-        // Create notification (database trigger will also create one, but this ensures it works)
-        try {
-          await NotificationService.notifyAppointmentCreated(data.id);
-        } catch (notificationError) {
-          console.error("Failed to create notification:", notificationError);
-        }
-
         return data;
       } catch (err) {
         const errorMessage =
@@ -103,13 +96,14 @@ export const useAppointments = () => {
         setAppointments(prev =>
           prev.map(appointment => (appointment.id === id ? data : appointment))
         );
-        toast.success("Appointment updated successfully");
+        // Don't show toast here - let the calling component handle it
 
-        // Create notification for status changes
+        // Create notification for status changes (only for important status changes)
         if (
           oldAppointment &&
           updates.status &&
-          oldAppointment.status !== updates.status
+          oldAppointment.status !== updates.status &&
+          (updates.status === "done" || updates.status === "delivered")
         ) {
           try {
             await NotificationService.notifyAppointmentStatusChange(
@@ -267,7 +261,7 @@ export const useScheduleAssignments = () => {
               new Date(b.start_time).getTime()
           )
         );
-        toast.success("Schedule assignment created successfully");
+        // Don't show toast here - let the calling component handle it
         return data;
       } catch (err) {
         const errorMessage =

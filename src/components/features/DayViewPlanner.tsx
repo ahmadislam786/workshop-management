@@ -22,7 +22,12 @@ import {
   Package,
 } from "lucide-react";
 import { toast } from "react-toastify";
-import type { Appointment, ScheduleAssignment, Technician } from "@/types";
+import type {
+  Appointment,
+  ScheduleAssignment,
+  Technician,
+  TechnicianAbsence,
+} from "@/types";
 import {
   WORKING_HOURS,
   calculateAvailableAW,
@@ -42,7 +47,7 @@ interface TimeSlot {
 interface TechnicianLane {
   technician: Technician;
   assignments: ScheduleAssignment[];
-  absences: any[];
+  absences: TechnicianAbsence[];
   availableAW: number;
   plannedAW: number;
   utilizationPercentage: number;
@@ -62,10 +67,11 @@ export const DayViewPlanner: React.FC = () => {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [draggedAppointment, setDraggedAppointment] =
     useState<Appointment | null>(null);
-  const [dragOverTechnicianId, setDragOverTechnicianId] = useState<string | null>(null);
+  const [dragOverTechnicianId, setDragOverTechnicianId] = useState<
+    string | null
+  >(null);
   const [filterPriority, setFilterPriority] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-
 
   const isToday = useMemo(() => {
     const now = new Date();
@@ -100,7 +106,7 @@ export const DayViewPlanner: React.FC = () => {
         setDayAppointments(appointments);
         setDayAssignments(assignments);
         setDayAbsences(absences);
-      } catch (error) {
+      } catch {
         toast.error("Failed to load day data. Please try again.");
       } finally {
         setLoadingDayData(false);
@@ -146,7 +152,8 @@ export const DayViewPlanner: React.FC = () => {
         );
 
         const technicianAbsences = dayAbsences.filter(
-          (absence: any) => absence.technician_id === technician.id
+          (absence: TechnicianAbsence) =>
+            absence.technician_id === technician.id
         );
 
         const plannedAW = technicianAssignments.reduce(
@@ -193,11 +200,12 @@ export const DayViewPlanner: React.FC = () => {
     const overallUtilization =
       totalCapacity > 0 ? (totalPlannedAW / totalCapacity) * 100 : 0;
     const waitingCustomers = unassignedAppointments.length;
-    const vehiclesOnsite = filteredAppointments.filter((app: Appointment) =>
-      app.flags?.includes("vehicle_onsite")
+    // These metrics are now calculated differently since flags field was removed
+    const vehiclesOnsite = filteredAppointments.filter(
+      (app: Appointment) => app.status === "in_progress"
     ).length;
-    const pendingParts = filteredAppointments.filter((app: Appointment) =>
-      app.flags?.includes("parts_ordered")
+    const pendingParts = filteredAppointments.filter(
+      (app: Appointment) => app.status === "waiting_parts"
     ).length;
 
     return {
@@ -229,6 +237,7 @@ export const DayViewPlanner: React.FC = () => {
 
       if (event.currentTarget instanceof HTMLElement) {
         event.currentTarget.style.opacity = "0.5";
+        event.currentTarget.style.transform = "rotate(2deg)";
       }
     },
     []
@@ -238,6 +247,7 @@ export const DayViewPlanner: React.FC = () => {
   const handleAppointmentDragEnd = useCallback((event: React.DragEvent) => {
     if (event.currentTarget instanceof HTMLElement) {
       event.currentTarget.style.opacity = "1";
+      event.currentTarget.style.transform = "rotate(0deg)";
     }
     setDraggedAppointment(null);
   }, []);
@@ -251,7 +261,9 @@ export const DayViewPlanner: React.FC = () => {
     ) => {
       event.preventDefault();
 
-      if (!draggedAppointment) return;
+      if (!draggedAppointment) {
+        return;
+      }
 
       try {
         // Calculate start and end times
@@ -283,23 +295,27 @@ export const DayViewPlanner: React.FC = () => {
         }
 
         // Create schedule assignment
-        await createAssignment({
+        const assignmentData = {
           appointment_id: draggedAppointment.id,
           technician_id: technicianId,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
           aw_planned: draggedAppointment.aw_estimate,
-          status: "scheduled",
-        });
+          status: "scheduled" as const,
+        };
+        await createAssignment(assignmentData);
 
         // Update appointment status
         await updateAppointment(draggedAppointment.id, {
           status: "scheduled",
         });
 
-        toast.success(`Appointment scheduled for ${timeSlot.timeString}`);
+        // Show single success message
+        toast.success(
+          `✅ ${draggedAppointment.title} scheduled for ${timeSlot.timeString}`
+        );
         setDraggedAppointment(null);
-      } catch (error) {
+      } catch {
         toast.error("Failed to schedule appointment");
       }
     },
@@ -333,14 +349,17 @@ export const DayViewPlanner: React.FC = () => {
 
   // Get status icon
   const getStatusIcon = useCallback((appointment: Appointment) => {
-    if (appointment.priority === "urgent") return <AlertCircle className="h-4 w-4" />;
-    if (appointment.priority === "high") return <AlertCircle className="h-4 w-4" />;
-    if (appointment.status === "waiting_parts") return <Package className="h-4 w-4" />;
+    if (appointment.priority === "urgent")
+      return <AlertCircle className="h-4 w-4" />;
+    if (appointment.priority === "high")
+      return <AlertCircle className="h-4 w-4" />;
+    if (appointment.status === "waiting_parts")
+      return <Package className="h-4 w-4" />;
     if (appointment.status === "paused") return <Pause className="h-4 w-4" />;
-    if (appointment.status === "done") return <CheckCircle className="h-4 w-4" />;
+    if (appointment.status === "done")
+      return <CheckCircle className="h-4 w-4" />;
     return <Clock className="h-4 w-4" />;
   }, []);
-
 
   // Calculate appointment position and width
   const getAppointmentStyle = useCallback((assignment: ScheduleAssignment) => {
@@ -423,7 +442,9 @@ export const DayViewPlanner: React.FC = () => {
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
             <div className="flex items-center space-x-2 mb-1">
               <Clock className="h-4 w-4 text-blue-600" />
-              <div className="text-sm font-medium text-blue-700">Planned AW</div>
+              <div className="text-sm font-medium text-blue-700">
+                Planned AW
+              </div>
             </div>
             <div className="text-2xl font-bold text-blue-900">
               {kpiMetrics.totalPlannedAW}
@@ -432,7 +453,9 @@ export const DayViewPlanner: React.FC = () => {
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
             <div className="flex items-center space-x-2 mb-1">
               <CheckCircle className="h-4 w-4 text-green-600" />
-              <div className="text-sm font-medium text-green-700">Available AW</div>
+              <div className="text-sm font-medium text-green-700">
+                Available AW
+              </div>
             </div>
             <div className="text-2xl font-bold text-green-900">
               {kpiMetrics.totalAvailableAW}
@@ -441,7 +464,9 @@ export const DayViewPlanner: React.FC = () => {
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
             <div className="flex items-center space-x-2 mb-1">
               <div className="w-4 h-4 rounded-full bg-purple-600"></div>
-              <div className="text-sm font-medium text-purple-700">Utilization</div>
+              <div className="text-sm font-medium text-purple-700">
+                Utilization
+              </div>
             </div>
             <div className="text-2xl font-bold text-purple-900">
               {kpiMetrics.overallUtilization.toFixed(1)}%
@@ -468,7 +493,9 @@ export const DayViewPlanner: React.FC = () => {
           <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-4 border border-yellow-200">
             <div className="flex items-center space-x-2 mb-1">
               <Package className="h-4 w-4 text-yellow-600" />
-              <div className="text-sm font-medium text-yellow-700">Pending Parts</div>
+              <div className="text-sm font-medium text-yellow-700">
+                Pending Parts
+              </div>
             </div>
             <div className="text-2xl font-bold text-yellow-900">
               {kpiMetrics.pendingParts}
@@ -482,7 +509,9 @@ export const DayViewPlanner: React.FC = () => {
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-2">
             <Filter className="h-5 w-5 text-gray-500" />
-            <span className="text-sm font-semibold text-gray-700">Filters:</span>
+            <span className="text-sm font-semibold text-gray-700">
+              Filters:
+            </span>
           </div>
 
           <select
@@ -542,7 +571,7 @@ export const DayViewPlanner: React.FC = () => {
                   setSelectedAppointment(appointment);
                   setShowAppointmentModal(true);
                 }}
-                className={`p-4 rounded-lg border-2 cursor-move hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 ${getAppointmentColor(appointment)}`}
+                className={`p-4 rounded-lg border-2 cursor-move hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 hover:scale-105 select-none ${getAppointmentColor(appointment)}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center space-x-2">
@@ -551,9 +580,12 @@ export const DayViewPlanner: React.FC = () => {
                       {appointment.title}
                     </span>
                   </div>
-                  <span className="text-xs bg-white bg-opacity-60 px-2 py-1 rounded-full font-medium">
-                    {appointment.aw_estimate} AW
-                  </span>
+                  <div className="flex items-center space-x-1">
+                    <span className="text-xs bg-white bg-opacity-60 px-2 py-1 rounded-full font-medium">
+                      {appointment.aw_estimate} AW
+                    </span>
+                    <div className="text-xs text-gray-500">⋮⋮</div>
+                  </div>
                 </div>
                 <div className="text-xs opacity-80 mb-2">
                   {appointment.customer?.name}
@@ -565,18 +597,7 @@ export const DayViewPlanner: React.FC = () => {
                   <span className="text-xs bg-white bg-opacity-60 px-2 py-1 rounded-full">
                     {appointment.priority}
                   </span>
-                  {appointment.flags && appointment.flags.length > 0 && (
-                    <div className="flex space-x-1">
-                      {appointment.flags.slice(0, 2).map((flag: any) => (
-                        <span
-                          key={flag}
-                          className="text-xs bg-white bg-opacity-60 px-1 py-0.5 rounded"
-                        >
-                          {flag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {/* Flags display removed - flags field was removed from schema */}
                 </div>
               </div>
             ))}
@@ -603,7 +624,9 @@ export const DayViewPlanner: React.FC = () => {
         <div className="bg-white border-b border-gray-200">
           <div className="flex">
             <div className="w-64 p-4 border-r border-gray-200 bg-gray-50">
-              <div className="text-sm font-medium text-gray-700">Technician</div>
+              <div className="text-sm font-medium text-gray-700">
+                Technician
+              </div>
             </div>
             <div className="flex-1 p-4">
               <div className="grid grid-cols-11 gap-0">
@@ -612,7 +635,7 @@ export const DayViewPlanner: React.FC = () => {
                   return (
                     <div key={hour} className="text-center">
                       <div className="text-sm font-medium text-gray-700">
-                        {hour.toString().padStart(2, '0')}:00
+                        {hour.toString().padStart(2, "0")}:00
                       </div>
                     </div>
                   );
@@ -640,11 +663,13 @@ export const DayViewPlanner: React.FC = () => {
                       {lane.technician.name}
                     </span>
                   </div>
-                  
+
                   <div className="space-y-1 text-xs text-gray-600">
                     <div className="flex justify-between">
                       <span>Capacity:</span>
-                      <span className="font-medium">{lane.technician.aw_capacity_per_day} AW</span>
+                      <span className="font-medium">
+                        {lane.technician.aw_capacity_per_day} AW
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Planned:</span>
@@ -652,7 +677,9 @@ export const DayViewPlanner: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Available:</span>
-                      <span className="font-medium text-green-600">{lane.availableAW} AW</span>
+                      <span className="font-medium text-green-600">
+                        {lane.availableAW} AW
+                      </span>
                     </div>
                   </div>
 
@@ -660,7 +687,9 @@ export const DayViewPlanner: React.FC = () => {
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-gray-600">Utilization</span>
-                      <span className={`font-medium ${getUtilizationColor(lane.utilizationPercentage)}`}>
+                      <span
+                        className={`font-medium ${getUtilizationColor(lane.utilizationPercentage)}`}
+                      >
                         {lane.utilizationPercentage.toFixed(1)}%
                       </span>
                     </div>
@@ -670,18 +699,22 @@ export const DayViewPlanner: React.FC = () => {
                           lane.utilizationPercentage > 90
                             ? "bg-red-500"
                             : lane.utilizationPercentage > 70
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
+                              ? "bg-yellow-500"
+                              : "bg-green-500"
                         }`}
-                        style={{ width: `${Math.min(100, lane.utilizationPercentage)}%` }}
+                        style={{
+                          width: `${Math.min(100, lane.utilizationPercentage)}%`,
+                        }}
                       />
                     </div>
                   </div>
 
                   {lane.absences.length > 0 && (
                     <div className="mt-2">
-                      <div className="text-xs text-red-600 font-medium">Absences:</div>
-                      {lane.absences.map((absence: any) => (
+                      <div className="text-xs text-red-600 font-medium">
+                        Absences:
+                      </div>
+                      {lane.absences.map((absence: TechnicianAbsence) => (
                         <div key={absence.id} className="text-xs text-red-600">
                           {absence.type}
                         </div>
@@ -693,6 +726,56 @@ export const DayViewPlanner: React.FC = () => {
 
               {/* Schedule Grid */}
               <div className="flex-1 relative">
+                {/* Drop Zone Overlay */}
+                <div
+                  className={`absolute inset-0 z-10 transition-colors duration-200 ${
+                    dragOverTechnicianId === lane.technician.id &&
+                    draggedAppointment
+                      ? "bg-blue-50 border-2 border-blue-300 border-dashed"
+                      : "hover:bg-gray-50"
+                  }`}
+                  onDrop={(e: React.DragEvent) => {
+                    e.preventDefault();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const width = rect.width;
+                    const hourIndex = Math.floor((x / width) * 11);
+                    const hour =
+                      WORKING_HOURS.start +
+                      Math.max(0, Math.min(10, hourIndex));
+                    const timeSlot = {
+                      hour,
+                      minute: 0,
+                      timeString: `${hour.toString().padStart(2, "0")}:00`,
+                      isWorkingHour: true,
+                    };
+                    handleTechnicianDrop(lane.technician.id, timeSlot, e);
+                  }}
+                  onDragOver={(e: React.DragEvent) => {
+                    e.preventDefault();
+                    handleDragOver(e);
+                    if (draggedAppointment) {
+                      setDragOverTechnicianId(lane.technician.id);
+                    }
+                  }}
+                  onDragLeave={() =>
+                    setDragOverTechnicianId(prev =>
+                      prev === lane.technician.id ? null : prev
+                    )
+                  }
+                >
+                  {/* Drop indicator text */}
+                  {dragOverTechnicianId === lane.technician.id &&
+                    draggedAppointment && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
+                          Drop to schedule at {draggedAppointment.aw_estimate}{" "}
+                          AW
+                        </div>
+                      </div>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-11 gap-0 h-full">
                   {Array.from({ length: 11 }, (_, i) => {
                     const hour = WORKING_HOURS.start + i;
@@ -700,19 +783,10 @@ export const DayViewPlanner: React.FC = () => {
                       <div
                         key={hour}
                         className="border-r border-gray-200 last:border-r-0 relative"
-                        onDrop={(e: React.DragEvent) => {
-                          const timeSlot = { hour, minute: 0, timeString: `${hour.toString().padStart(2, '0')}:00`, isWorkingHour: true };
-                          handleTechnicianDrop(lane.technician.id, timeSlot, e);
-                        }}
-                        onDragOver={(e: React.DragEvent) => {
-                          handleDragOver(e);
-                          if (draggedAppointment) setDragOverTechnicianId(lane.technician.id);
-                        }}
-                        onDragLeave={() => setDragOverTechnicianId(prev => (prev === lane.technician.id ? null : prev))}
                       >
                         {/* Hour markers */}
                         <div className="absolute top-1 left-1 text-xs text-gray-400">
-                          {hour.toString().padStart(2, '0')}
+                          {hour.toString().padStart(2, "0")}
                         </div>
                       </div>
                     );
@@ -720,14 +794,17 @@ export const DayViewPlanner: React.FC = () => {
                 </div>
 
                 {/* Current time indicator */}
-                {isToday && (
+                {isToday &&
                   (() => {
                     const now = new Date();
                     const currentHour = now.getHours();
-                    if (currentHour >= WORKING_HOURS.start && currentHour < WORKING_HOURS.end) {
+                    if (
+                      currentHour >= WORKING_HOURS.start &&
+                      currentHour < WORKING_HOURS.end
+                    ) {
                       const hourIndex = currentHour - WORKING_HOURS.start;
                       const minutes = now.getMinutes();
-                      const position = (hourIndex + minutes / 60) / 11 * 100;
+                      const position = ((hourIndex + minutes / 60) / 11) * 100;
                       return (
                         <div
                           className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20"
@@ -736,11 +813,10 @@ export const DayViewPlanner: React.FC = () => {
                       );
                     }
                     return null;
-                  })()
-                )}
+                  })()}
 
                 {/* Appointments */}
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 pointer-events-none z-20">
                   {lane.assignments.map((assignment: ScheduleAssignment) => (
                     <div
                       key={assignment.id}
@@ -807,28 +883,29 @@ export const DayViewPlanner: React.FC = () => {
                   <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Title:</span>
-                      <span className="font-medium">{selectedAppointment.title}</span>
+                      <span className="font-medium">
+                        {selectedAppointment.title}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">AW Estimate:</span>
-                      <span className="font-medium">{selectedAppointment.aw_estimate}</span>
+                      <span className="font-medium">
+                        {selectedAppointment.aw_estimate}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Priority:</span>
-                      <span className="font-medium capitalize">{selectedAppointment.priority}</span>
+                      <span className="font-medium capitalize">
+                        {selectedAppointment.priority}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Status:</span>
-                      <span className="font-medium capitalize">{selectedAppointment.status}</span>
+                      <span className="font-medium capitalize">
+                        {selectedAppointment.status}
+                      </span>
                     </div>
-                    {selectedAppointment.sla_promised_at && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">SLA:</span>
-                        <span className="font-medium">
-                          {new Date(selectedAppointment.sla_promised_at).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
+                    {/* SLA field removed - sla_promised_at field was removed from schema */}
                   </div>
                 </div>
 
@@ -842,7 +919,9 @@ export const DayViewPlanner: React.FC = () => {
                       <User className="h-4 w-4 mr-2 text-gray-500" />
                       <div>
                         <div className="text-sm text-gray-600">Customer</div>
-                        <div className="font-medium">{selectedAppointment.customer?.name}</div>
+                        <div className="font-medium">
+                          {selectedAppointment.customer?.name}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center">
@@ -850,7 +929,8 @@ export const DayViewPlanner: React.FC = () => {
                       <div>
                         <div className="text-sm text-gray-600">Vehicle</div>
                         <div className="font-medium">
-                          {selectedAppointment.vehicle?.make} {selectedAppointment.vehicle?.model}
+                          {selectedAppointment.vehicle?.make}{" "}
+                          {selectedAppointment.vehicle?.model}
                         </div>
                         <div className="text-sm text-gray-500">
                           {selectedAppointment.vehicle?.license_plate}
@@ -870,37 +950,28 @@ export const DayViewPlanner: React.FC = () => {
                 </div>
               )}
 
-              {selectedAppointment.required_skills && selectedAppointment.required_skills.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Required Skills</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedAppointment.required_skills.map((skill: any) => (
-                      <span
-                        key={skill}
-                        className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))}
+              {selectedAppointment.required_skills &&
+                selectedAppointment.required_skills.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Required Skills
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedAppointment.required_skills.map(
+                        (skill: string) => (
+                          <span
+                            key={skill}
+                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                          >
+                            {skill}
+                          </span>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {selectedAppointment.flags && selectedAppointment.flags.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Flags</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedAppointment.flags.map((flag: any) => (
-                      <span
-                        key={flag}
-                        className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium"
-                      >
-                        {flag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Flags section removed - flags field was removed from schema */}
             </div>
           </div>
         </div>
