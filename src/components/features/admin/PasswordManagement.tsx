@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Lock, Eye, EyeOff, Shield, User, X } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/config/supabase";
 import { toast } from "react-toastify";
 
 interface PasswordChangeData {

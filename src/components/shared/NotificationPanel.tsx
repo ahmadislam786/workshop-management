@@ -3,7 +3,7 @@ import { Bell, X, Check, CheckCheck, ExternalLink, Settings, Volume2, VolumeX } 
 import { Button } from "@/components/ui/Button";
 import { useNotifications } from "@/contexts/notification-context";
 import { useLanguage } from "@/contexts/language-context";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/formatting/utils";
 
 interface NotificationPanelProps {
   isOpen: boolean;

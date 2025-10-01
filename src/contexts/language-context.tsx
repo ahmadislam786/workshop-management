@@ -204,15 +204,13 @@ const translations = {
 
     // Status
     "status.pending": "pending",
-    "status.scheduled": "scheduled",
+    "status.assigned": "assigned",
     "status.inProgress": "in progress",
     "status.completed": "completed",
     "status.cancelled": "cancelled",
     "status.new": "new",
     "status.paused": "paused",
-    "status.waiting_parts": "waiting parts",
-    "status.done": "done",
-    "status.delivered": "delivered",
+    "status.waiting": "waiting",
 
     // Login Form
     "login.signInFailed": "Sign in failed",
@@ -494,15 +492,13 @@ const translations = {
 
     // Status
     "status.pending": "ausstehend",
-    "status.scheduled": "geplant",
+    "status.assigned": "zugewiesen",
     "status.inProgress": "in Bearbeitung",
     "status.completed": "abgeschlossen",
     "status.cancelled": "storniert",
     "status.new": "neu",
     "status.paused": "pausiert",
-    "status.waiting_parts": "wartet auf Teile",
-    "status.done": "erledigt",
-    "status.delivered": "ausgeliefert",
+    "status.waiting": "wartend",
 
     // Login Form
     "login.signInFailed": "Anmeldung fehlgeschlagen",

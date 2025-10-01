@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Search, Filter, X, ChevronDown } from "lucide-react";
 import { Input } from "./Input";
 import { Button } from "./Button";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/formatting/utils";
 
 interface FilterOption {
   value: string;

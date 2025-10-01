@@ -1,12 +1,15 @@
 import React, { useEffect } from "react";
-import { NotificationService } from "@/lib/notification-service";
-import { PushNotificationService } from "@/lib/push-notification-service";
+import { NotificationService } from "@/services/notifications/notification-service";
+import { PushNotificationService } from "@/services/notifications/push-notification-service";
+import { useAuth } from "@/contexts/auth-context";
 
 /**
  * Component that initializes the notification system
  * This should be included in the main App component
  */
 export const NotificationInitializer: React.FC = () => {
+  const { profile } = useAuth();
+
   useEffect(() => {
     // Initialize push notifications
     const initializePushNotifications = async () => {
@@ -28,15 +31,17 @@ export const NotificationInitializer: React.FC = () => {
       }
     };
 
-    // Initialize everything
-    initializePushNotifications();
-    startPeriodicChecks();
+    if (profile?.id) {
+      // Initialize everything once user is known (prevents double-run on sign-out)
+      initializePushNotifications();
+      startPeriodicChecks();
+    }
 
     // Cleanup function
     return () => {
-      // Any cleanup if needed
+      NotificationService.stopPeriodicChecks();
     };
-  }, []);
+  }, [profile?.id]);
 
   // This component doesn't render anything
   return null;

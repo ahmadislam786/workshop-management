@@ -1,71 +1,110 @@
-import { useState, useEffect } from "react";
-import type { Vehicle, Customer } from "../../../types";
-import { useVehicles } from "@/hooks/useVehicles";
-import { useCustomers } from "@/hooks/useCustomers";
+import { useState, useMemo } from "react";
+import type { Vehicle } from "@/types";
+import { useData } from "@/contexts/data-context";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { CustomerSearch } from "../customers/CustomerSearch";
 import {
   Plus,
   Search,
-  Edit,
-  Trash2,
   Car,
   User,
-  Calendar,
+  // Calendar,
   Hash,
+  Filter,
+  Grid3X3,
+  List,
+  RefreshCw,
+  X,
+  Settings,
 } from "lucide-react";
 import { toast } from "react-toastify";
 
 export const VehicleList: React.FC = () => {
-  const { vehicles, loading, createVehicle, updateVehicle, deleteVehicle } =
-    useVehicles();
-  const { customers } = useCustomers();
+  const { state, createVehicle, updateVehicle, deleteVehicle, refreshAll } =
+    useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showFilters, setShowFilters] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [formData, setFormData] = useState({
     make: "",
     model: "",
+    year: new Date().getFullYear(),
     license_plate: "",
-    year: "",
+    vin: "",
+    color: "",
     customer_id: "",
   });
 
-  useEffect(() => {
-    if (showForm && !editingVehicle) {
-      resetForm();
+  // Get vehicles and customers from global state
+  const vehicles = state.vehicles;
+  const customers = state.customers;
+  const loading = state.loading.vehicles;
+  const error = state.errors.vehicles;
+
+  // Combine vehicles with their customer info
+  const vehiclesWithCustomers = useMemo(() => {
+    return vehicles.map(vehicle => ({
+      ...vehicle,
+      customer: customers.find(customer => customer.id === vehicle.customer_id),
+    }));
+  }, [vehicles, customers]);
+
+  // Filter vehicles based on search term
+  const filteredVehicles = useMemo(() => {
+    return vehiclesWithCustomers.filter(vehicle => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        vehicle.make.toLowerCase().includes(searchLower) ||
+        vehicle.model.toLowerCase().includes(searchLower) ||
+        (vehicle.license_plate ?? "").toLowerCase().includes(searchLower) ||
+        (vehicle.vin ?? "").toLowerCase().includes(searchLower) ||
+        vehicle.customer?.name.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [vehiclesWithCustomers, searchTerm]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshAll();
+      toast.success("Data refreshed successfully");
+    } catch (error) {
+      toast.error("Failed to refresh data");
+    } finally {
+      setIsRefreshing(false);
     }
-  }, [showForm, editingVehicle]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      const vehicleData = {
-        ...formData,
-        year: parseInt(formData.year) || undefined,
-      };
+    if (!formData.make.trim() || !formData.model.trim()) {
+      toast.error("Make and model are required");
+      return;
+    }
 
+    try {
       if (editingVehicle) {
-        await updateVehicle(editingVehicle.id, vehicleData);
-        // Toast is handled by the hook
+        await updateVehicle(editingVehicle.id, formData);
+        setEditingVehicle(null);
       } else {
-        await createVehicle(vehicleData);
-        // Toast is handled by the hook
+        await createVehicle(formData);
       }
 
-      // Trigger refresh event for dashboard data
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("refresh-dashboard-data"));
-      }, 100);
-
       setShowForm(false);
-      setEditingVehicle(null);
-      resetForm();
+      setFormData({
+        make: "",
+        model: "",
+        year: new Date().getFullYear(),
+        license_plate: "",
+        vin: "",
+        color: "",
+        customer_id: "",
+      });
     } catch (error) {
-      toast.error("Failed to save vehicle");
+      console.error("Error saving vehicle:", error);
     }
   };
 
@@ -74,248 +113,415 @@ export const VehicleList: React.FC = () => {
     setFormData({
       make: vehicle.make,
       model: vehicle.model,
-      license_plate: vehicle.license_plate,
-      year: vehicle.year.toString(),
-      customer_id: vehicle.customer_id,
+      year: vehicle.year ?? new Date().getFullYear(),
+      license_plate: vehicle.license_plate ?? "",
+      vin: vehicle.vin ?? "",
+      color: vehicle.color ?? "",
+      customer_id: vehicle.customer_id ?? "",
     });
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this vehicle?")) return;
-
-    try {
-      await deleteVehicle(id);
-      // Toast is handled by the hook
-    } catch {
-      toast.error("Failed to delete vehicle");
+  const handleDelete = async (vehicle: Vehicle) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${vehicle.make} ${vehicle.model}?`
+      )
+    ) {
+      await deleteVehicle(vehicle.id);
     }
   };
 
-  const resetForm = () => {
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingVehicle(null);
     setFormData({
       make: "",
       model: "",
+      year: new Date().getFullYear(),
       license_plate: "",
-      year: "",
+      vin: "",
+      color: "",
       customer_id: "",
     });
   };
 
-  const handleCustomerSelect = (customer: Customer, vehicle?: Vehicle) => {
-    if (vehicle) {
-      setSearchTerm(vehicle.license_plate);
-    } else {
-      setSearchTerm(customer.name);
-    }
-  };
-
-  const filteredVehicles = vehicles.filter(
-    vehicle =>
-      vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.license_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customers
-        .find(c => c.id === vehicle.customer_id)
-        ?.name.toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
-
-  const getCustomerName = (customerId: string) => {
-    return customers.find(c => c.id === customerId)?.name || "Unknown Customer";
-  };
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading vehicles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">
+            Error loading vehicles: {error}
+          </div>
+          <Button onClick={handleRefresh} variant="outline">
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Vehicles</h2>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Vehicle
-        </Button>
-      </div>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+            <Car className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Vehicles</h1>
+            <p className="text-gray-600">
+              {filteredVehicles.length} vehicle
+              {filteredVehicles.length !== 1 ? "s" : ""} found
+            </p>
+          </div>
+        </div>
 
-      {/* Enhanced Search */}
-      <div className="space-y-4">
-        <CustomerSearch
-          onCustomerSelect={handleCustomerSelect}
-          placeholder="Search by customer name or license plate..."
-          className="max-w-md"
-        />
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
 
-        {/* Traditional search as fallback */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Quick search..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+          <Button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            New Vehicle
+          </Button>
         </div>
       </div>
 
+      {/* Search and Filters */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search vehicles..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+            </Button>
+
+            <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+              <Button
+                variant={viewMode === "grid" ? "primary" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-none border-0"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "primary" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-none border-0"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      {filteredVehicles.length === 0 ? (
+        <div className="text-center py-12">
+          <Car className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {searchTerm ? "No vehicles found" : "No vehicles yet"}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {searchTerm
+              ? "Try adjusting your search"
+              : "Get started by adding your first vehicle"}
+          </p>
+          {!searchTerm && (
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Vehicle
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
+          }
+        >
+          {filteredVehicles.map((vehicle, index) => (
+            <div
+              key={vehicle.id}
+              className={`bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 animate-fade-in-up`}
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Car className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">
+                      {vehicle.make} {vehicle.model}
+                    </h3>
+                    <p className="text-sm text-gray-600">{vehicle.year}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(vehicle)}
+                    title="Edit vehicle"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(vehicle)}
+                    title="Delete vehicle"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Hash className="h-4 w-4" />
+                  <span>{vehicle.license_plate}</span>
+                </div>
+                {vehicle.vin && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Hash className="h-4 w-4" />
+                    <span className="font-mono text-xs">{vehicle.vin}</span>
+                  </div>
+                )}
+                {vehicle.color && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div
+                      className="w-4 h-4 rounded-full border border-gray-300"
+                      style={{ backgroundColor: vehicle.color }}
+                    />
+                    <span>{vehicle.color}</span>
+                  </div>
+                )}
+              </div>
+
+              {vehicle.customer && (
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">
+                      Owner: {vehicle.customer.name}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingVehicle ? "Edit Vehicle" : "New Vehicle"}
-            </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {editingVehicle ? "Edit Vehicle" : "New Vehicle"}
+              </h2>
+              <Button variant="outline" size="sm" onClick={handleCancel}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Select
-                label="Customer"
-                value={formData.customer_id}
-                onChange={value =>
-                  setFormData({ ...formData, customer_id: value })
-                }
-                options={customers.map(customer => ({
-                  value: customer.id,
-                  label: customer.name,
-                }))}
-                placeholder="Select Customer"
-                required
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Make *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Make"
+                    value={formData.make}
+                    onChange={e =>
+                      setFormData({ ...formData, make: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Model *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Model"
+                    value={formData.model}
+                    onChange={e =>
+                      setFormData({ ...formData, model: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
 
-              <Input
-                placeholder="Make (e.g., Toyota, Honda)"
-                value={formData.make}
-                onChange={e =>
-                  setFormData({ ...formData, make: e.target.value })
-                }
-                required
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    min="1900"
+                    max={new Date().getFullYear() + 1}
+                    value={formData.year}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        year: parseInt(
+                          e.target.value || String(new Date().getFullYear())
+                        ),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    License Plate
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="License plate"
+                    value={formData.license_plate}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        license_plate: e.target.value || "",
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
 
-              <Input
-                placeholder="Model (e.g., Camry, Civic)"
-                value={formData.model}
-                onChange={e =>
-                  setFormData({ ...formData, model: e.target.value })
-                }
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  VIN
+                </label>
+                <input
+                  type="text"
+                  placeholder="Vehicle identification number"
+                  value={formData.vin}
+                  onChange={e =>
+                    setFormData({ ...formData, vin: e.target.value || "" })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-              <Input
-                placeholder="License Plate"
-                value={formData.license_plate}
-                onChange={e =>
-                  setFormData({ ...formData, license_plate: e.target.value })
-                }
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Color
+                </label>
+                <input
+                  type="text"
+                  placeholder="Vehicle color"
+                  value={formData.color}
+                  onChange={e =>
+                    setFormData({ ...formData, color: e.target.value || "" })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
 
-              <Input
-                type="number"
-                placeholder="Year"
-                value={formData.year}
-                onChange={e =>
-                  setFormData({ ...formData, year: e.target.value })
-                }
-                min="1900"
-                max={new Date().getFullYear() + 1}
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Owner
+                </label>
+                <select
+                  value={formData.customer_id}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      customer_id: e.target.value || "",
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select customer</option>
+                  {customers.map(customer => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <div className="flex space-x-2">
-                <Button type="submit" className="flex-1">
-                  {editingVehicle ? "Update" : "Create"}
-                </Button>
+              <div className="flex gap-3 pt-4">
                 <Button
                   type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingVehicle(null);
-                    resetForm();
-                  }}
-                  variant="secondary"
+                  variant="outline"
+                  onClick={handleCancel}
                   className="flex-1"
                 >
                   Cancel
                 </Button>
+                <Button type="submit" className="flex-1">
+                  {editingVehicle ? "Update Vehicle" : "Create Vehicle"}
+                </Button>
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {filteredVehicles.length === 0 ? (
-        <div className="text-center py-12">
-          <Car className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2 text-gray-500 text-lg">No vehicles found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredVehicles.map(vehicle => (
-            <div
-              key={vehicle.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center mb-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                      <Car className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {vehicle.make} {vehicle.model}
-                      </h3>
-                      <p className="text-sm text-blue-600 font-medium">
-                        {vehicle.license_plate}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-2" />
-                      <span className="font-medium">Owner:</span>
-                      <span className="ml-1">
-                        {getCustomerName(vehicle.customer_id)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span className="font-medium">Year:</span>
-                      <span className="ml-1">{vehicle.year}</span>
-                    </div>
-
-                    <div className="flex items-center">
-                      <Hash className="h-4 w-4 mr-2" />
-                      <span className="font-medium">ID:</span>
-                      <span className="ml-1 font-mono text-xs">
-                        {vehicle.id.slice(0, 8)}...
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleEdit(vehicle)}
-                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(vehicle.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       )}
     </div>

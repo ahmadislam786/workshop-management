@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useCustomers } from "@/hooks/useCustomers";
-import { useVehicles } from "@/hooks/useVehicles";
+import { useCustomers } from "@/hooks/api";
+import { useVehicles } from "@/hooks/api";
 import { Search, User, Car, X } from "lucide-react";
-import type { Customer, Vehicle } from "../../../types";
+import type { Customer, Vehicle } from "@/types";
 
 interface CustomerSearchProps {
   onCustomerSelect?: (customer: Customer, vehicle?: Vehicle) => void;
@@ -76,7 +76,7 @@ export const CustomerSearch: React.FC<CustomerSearchProps> = ({
 
     // Search by license plate
     vehicles.forEach(vehicle => {
-      if (vehicle.license_plate.toLowerCase().includes(term)) {
+      if (vehicle.license_plate?.toLowerCase().includes(term)) {
         const customer = customers.find(c => c.id === vehicle.customer_id);
         if (customer) {
           results.push({

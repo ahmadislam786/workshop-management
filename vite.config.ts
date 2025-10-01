@@ -6,6 +6,22 @@ export default defineConfig({
   plugins: [react()],
   root: ".",
   publicDir: "public",
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./vitest.setup.ts"],
+    globals: true,
+    testTimeout: 20000,
+    css: true,
+    exclude: [
+      "tests/e2e/**",
+      "**/node_modules/**",
+      "**/dist/**",
+    ],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+    },
+  },
   build: {
     outDir: "dist",
     rollupOptions: {

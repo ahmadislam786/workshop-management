@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertTriangle, CheckCircle, X, Clock, User, Car } from "lucide-react";
 import type { Appointment, ScheduleAssignment, Technician } from "@/types";
-import { timeRangesOverlap, isWithinWorkingHours } from "@/lib/aw-utils";
+import { timeRangesOverlap, isWithinWorkingHours } from "@/utils/formatting/aw-utils";
 
 interface ValidationResult {
   isValid: boolean;

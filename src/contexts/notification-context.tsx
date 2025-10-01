@@ -5,9 +5,9 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/hooks/useAuth";
-import { PushNotificationService } from "@/lib/push-notification-service";
+import { supabase } from "@/config/supabase";
+import { useAuth } from "@/hooks/auth";
+import { PushNotificationService } from "@/services/notifications/push-notification-service";
 
 export interface Notification {
   id: string;
@@ -139,7 +139,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Initialize push notifications
+  // Initialize push notifications when a user id exists
   useEffect(() => {
     const initializePushNotifications = async () => {
       try {
@@ -150,8 +150,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     };
 
-    initializePushNotifications();
-  }, []);
+    if (profile?.id) {
+      initializePushNotifications();
+    }
+  }, [profile?.id]);
 
   useEffect(() => {
     if (profile) {

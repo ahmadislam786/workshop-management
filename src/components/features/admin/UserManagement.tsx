@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { UserManagementService } from "../../../lib/user-management";
-import type { CreateUserData } from "../../../types";
+import { UserManagementService } from "@/services/api/user-management";
+import type { CreateUserData } from "@/types";
 import { toast } from "react-toastify";
 import { UserPlus, X } from "lucide-react";
 
