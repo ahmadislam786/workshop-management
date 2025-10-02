@@ -35,6 +35,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resubscribeKey, setResubscribeKey] = useState(0);
 
   // Ensure we never leak channels
   const removeAllChannels = useMemo(
@@ -42,8 +43,8 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
       channelsRef.current.forEach(ch => {
         try {
           supabase.removeChannel(ch);
-        } catch (e) {
-          console.warn("Realtime: Failed to remove channel", e);
+        } catch {
+          // suppress noisy logs in production
         }
       });
       channelsRef.current.clear();
@@ -72,8 +73,8 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
     if (existing) {
       try {
         supabase.removeChannel(existing);
-      } catch (e) {
-        console.warn("Realtime: Failed to remove existing channel", e);
+      } catch {
+        // suppress noisy logs in production
       }
       channelsRef.current.delete(table);
     }
@@ -183,7 +184,14 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       removeAllChannels();
     };
-  }, [authState, userId, dispatch, refreshAll, removeAllChannels]);
+  }, [
+    authState,
+    userId,
+    dispatch,
+    refreshAll,
+    removeAllChannels,
+    resubscribeKey,
+  ]);
 
   const value: RealtimeContextType = {
     connected,
@@ -191,13 +199,11 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
     reconnect: () => {
       // Force re-subscribe by clearing and letting effect run
       removeAllChannels();
-      // No-op: effect will re-run on same deps; to force, we can trigger a refresh
-      setTimeout(() => {
-        if (authState === "signed_in" && userId) {
-          // Trigger a lightweight refresh to rehydrate UI while channels reconnect
-          refreshAll();
-        }
-      }, 0);
+      // Toggle a key to force the effect to re-run and resubscribe immediately
+      setResubscribeKey(k => k + 1);
+      if (authState === "signed_in" && userId) {
+        refreshAll();
+      }
     },
   };
 

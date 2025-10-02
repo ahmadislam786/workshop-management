@@ -399,6 +399,52 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   // Import useAuth to check authentication status
   const { userId, loading: authLoading, authState } = useAuth();
 
+  // ---------------------------------------------
+  // Local storage cache for fast hydration on refresh
+  // ---------------------------------------------
+  const getCacheKey = useCallback(
+    (entity: keyof DataState["cache"]) => `wm-cache:${userId}:${entity}`,
+    [userId]
+  );
+
+  // Hydrate from localStorage when user becomes authenticated
+  useEffect(() => {
+    if (authLoading) return;
+    if (authState !== "signed_in" || !userId) return;
+
+    try {
+      const customersJson = window.localStorage.getItem(
+        getCacheKey("customers")
+      );
+      const vehiclesJson = window.localStorage.getItem(getCacheKey("vehicles"));
+      const appointmentsJson = window.localStorage.getItem(
+        getCacheKey("appointments")
+      );
+      const techniciansJson = window.localStorage.getItem(
+        getCacheKey("technicians")
+      );
+
+      if (customersJson) {
+        const customers = JSON.parse(customersJson) as Customer[];
+        dispatch({ type: "SET_CUSTOMERS", customers });
+      }
+      if (vehiclesJson) {
+        const vehicles = JSON.parse(vehiclesJson) as Vehicle[];
+        dispatch({ type: "SET_VEHICLES", vehicles });
+      }
+      if (appointmentsJson) {
+        const appointments = JSON.parse(appointmentsJson) as Appointment[];
+        dispatch({ type: "SET_APPOINTMENTS", appointments });
+      }
+      if (techniciansJson) {
+        const technicians = JSON.parse(techniciansJson) as Technician[];
+        dispatch({ type: "SET_TECHNICIANS", technicians });
+      }
+    } catch {
+      // Ignore hydration errors; network fetch will correct state
+    }
+  }, [authLoading, authState, userId, getCacheKey]);
+
   // Generic fetch function with caching
   const fetchData = useCallback(
     async (
@@ -410,7 +456,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         dispatch({ type: "SET_LOADING", entity, loading: true });
         dispatch({ type: "SET_ERROR", entity, error: null });
 
-        console.log(`Data: Fetching ${entity} from ${table}`);
+        
 
         const { data, error } = await supabase
           .from(table)
@@ -446,17 +492,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
             });
             break;
           default:
-            console.warn(`Unknown entity type: ${entity}`);
+            
         }
 
-        console.log(
-          `Data: Successfully fetched ${data?.length || 0} ${entity}`
-        );
+        
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Unknown error";
         dispatch({ type: "SET_ERROR", entity, error: errorMessage });
-        console.error(`Data: Failed to fetch ${entity}:`, errorMessage);
         toast.error(`Failed to load ${entity}`);
       } finally {
         dispatch({ type: "SET_LOADING", entity, loading: false });
@@ -491,10 +534,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
     await fetchData("technicians", "technicians");
   }, [fetchData]);
 
+  // Persist slices to localStorage whenever they change (only when authenticated)
+  useEffect(() => {
+    if (authState !== "signed_in" || !userId) return;
+    try {
+      window.localStorage.setItem(
+        getCacheKey("customers"),
+        JSON.stringify(state.customers)
+      );
+      window.localStorage.setItem(
+        getCacheKey("vehicles"),
+        JSON.stringify(state.vehicles)
+      );
+      window.localStorage.setItem(
+        getCacheKey("appointments"),
+        JSON.stringify(state.appointments)
+      );
+      window.localStorage.setItem(
+        getCacheKey("technicians"),
+        JSON.stringify(state.technicians)
+      );
+    } catch {}
+  }, [
+    state.customers,
+    state.vehicles,
+    state.appointments,
+    state.technicians,
+    authState,
+    userId,
+    getCacheKey,
+  ]);
+
   // CRUD operations for customers
   const createCustomer = useCallback(async (data: Partial<Customer>) => {
     try {
-      console.log("Data: Creating customer", data);
+      
       const { data: result, error } = await supabase
         .from("customers")
         .insert([data])
@@ -510,7 +584,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create customer";
       toast.error(errorMessage);
-      console.error("Data: Failed to create customer:", errorMessage);
+      
       return null;
     }
   }, []);
@@ -518,7 +592,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateCustomer = useCallback(
     async (id: string, data: Partial<Customer>) => {
       try {
-        console.log("Data: Updating customer", id, data);
+        
         const { error } = await supabase
           .from("customers")
           .update(data)
@@ -533,7 +607,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update customer";
         toast.error(errorMessage);
-        console.error("Data: Failed to update customer:", errorMessage);
+        
         return false;
       }
     },
@@ -542,7 +616,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteCustomer = useCallback(async (id: string) => {
     try {
-      console.log("Data: Deleting customer", id);
+      
       const { error } = await supabase.from("customers").delete().eq("id", id);
 
       if (error) throw error;
@@ -554,7 +628,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete customer";
       toast.error(errorMessage);
-      console.error("Data: Failed to delete customer:", errorMessage);
+      
       return false;
     }
   }, []);
@@ -562,7 +636,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   // CRUD operations for vehicles
   const createVehicle = useCallback(async (data: Partial<Vehicle>) => {
     try {
-      console.log("Data: Creating vehicle", data);
+      
       const { data: result, error } = await supabase
         .from("vehicles")
         .insert([data])
@@ -578,7 +652,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create vehicle";
       toast.error(errorMessage);
-      console.error("Data: Failed to create vehicle:", errorMessage);
+      
       return null;
     }
   }, []);
@@ -586,7 +660,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateVehicle = useCallback(
     async (id: string, data: Partial<Vehicle>) => {
       try {
-        console.log("Data: Updating vehicle", id, data);
+        
         const { error } = await supabase
           .from("vehicles")
           .update(data)
@@ -601,7 +675,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update vehicle";
         toast.error(errorMessage);
-        console.error("Data: Failed to update vehicle:", errorMessage);
+        
         return false;
       }
     },
@@ -610,7 +684,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteVehicle = useCallback(async (id: string) => {
     try {
-      console.log("Data: Deleting vehicle", id);
+      
       const { error } = await supabase.from("vehicles").delete().eq("id", id);
 
       if (error) throw error;
@@ -622,7 +696,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete vehicle";
       toast.error(errorMessage);
-      console.error("Data: Failed to delete vehicle:", errorMessage);
+      
       return false;
     }
   }, []);
@@ -630,7 +704,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   // CRUD operations for appointments
   const createAppointment = useCallback(async (data: Partial<Appointment>) => {
     try {
-      console.log("Data: Creating appointment", data);
+      
       const { data: result, error } = await supabase
         .from("appointments")
         .insert([data])
@@ -653,7 +727,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create appointment";
       toast.error(errorMessage);
-      console.error("Data: Failed to create appointment:", errorMessage);
+      
       return null;
     }
   }, []);
@@ -661,7 +735,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateAppointment = useCallback(
     async (id: string, data: Partial<Appointment>) => {
       try {
-        console.log("Data: Updating appointment", id, data);
+        
         const { error } = await supabase
           .from("appointments")
           .update(data)
@@ -676,7 +750,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update appointment";
         toast.error(errorMessage);
-        console.error("Data: Failed to update appointment:", errorMessage);
+        
         return false;
       }
     },
@@ -685,7 +759,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteAppointment = useCallback(async (id: string) => {
     try {
-      console.log("Data: Deleting appointment", id);
+      
       const { error } = await supabase
         .from("appointments")
         .delete()
@@ -700,7 +774,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete appointment";
       toast.error(errorMessage);
-      console.error("Data: Failed to delete appointment:", errorMessage);
+      
       return false;
     }
   }, []);
@@ -708,7 +782,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   // CRUD operations for technicians
   const createTechnician = useCallback(async (data: Partial<Technician>) => {
     try {
-      console.log("Data: Creating technician", data);
+      
       const { data: result, error } = await supabase
         .from("technicians")
         .insert([data])
@@ -724,7 +798,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to create technician";
       toast.error(errorMessage);
-      console.error("Data: Failed to create technician:", errorMessage);
+      
       return null;
     }
   }, []);
@@ -732,7 +806,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   const updateTechnician = useCallback(
     async (id: string, data: Partial<Technician>) => {
       try {
-        console.log("Data: Updating technician", id, data);
+        
         const { error } = await supabase
           .from("technicians")
           .update(data)
@@ -747,7 +821,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update technician";
         toast.error(errorMessage);
-        console.error("Data: Failed to update technician:", errorMessage);
+        
         return false;
       }
     },
@@ -756,7 +830,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const deleteTechnician = useCallback(async (id: string) => {
     try {
-      console.log("Data: Deleting technician", id);
+      
       const { error } = await supabase
         .from("technicians")
         .delete()
@@ -771,14 +845,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete technician";
       toast.error(errorMessage);
-      console.error("Data: Failed to delete technician:", errorMessage);
+      
       return false;
     }
   }, []);
 
   // Refresh all data
   const refreshAll = useCallback(async () => {
-    console.log("Data: Refreshing all data");
+    
     await Promise.all([
       fetchCustomers(),
       fetchVehicles(),
@@ -789,7 +863,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Clear cache
   const clearCache = useCallback(() => {
-    console.log("Data: Clearing cache");
+    
     dispatch({ type: "CLEAR_CACHE" });
   }, []);
 
@@ -807,14 +881,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (authLoading) return;
     if (authState === "signed_in" && profileUserId) {
-      console.log("Data: User authenticated, fetching all data");
+      
       refreshAll();
     }
     if (authState === "signed_out") {
-      console.log("Data: User not authenticated, clearing data");
+      
       dispatch({ type: "CLEAR_CACHE" });
+      try {
+        if (userId) {
+          window.localStorage.removeItem(getCacheKey("customers"));
+          window.localStorage.removeItem(getCacheKey("vehicles"));
+          window.localStorage.removeItem(getCacheKey("appointments"));
+          window.localStorage.removeItem(getCacheKey("technicians"));
+        }
+      } catch {}
     }
-  }, [profileUserId, refreshAll, authLoading, authState]);
+  }, [profileUserId, refreshAll, authLoading, authState, userId, getCacheKey]);
 
   const value: DataContextType = {
     state,

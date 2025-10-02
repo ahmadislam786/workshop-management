@@ -54,8 +54,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Fetch user profile and technician data
   const fetchProfile = useCallback(async (userId: string): Promise<boolean> => {
     try {
-      console.log("Auth: Fetching profile for user", userId);
-
       // Fetch profile
       const { data: profileData, error: profileError } = await supabase
         .from("profile")
@@ -64,15 +62,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         .single();
 
       if (profileError) {
-        console.error("Error fetching profile:", profileError);
         setError("Failed to load user profile");
         return false;
       }
 
       if (!profileData) {
-        console.warn(
-          "No profile row found for user; proceeding with minimal profile"
-        );
         // Gracefully proceed with a minimal profile object so UI can load
         const minimalProfile = {
           id: userId as unknown as string,
@@ -98,16 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             .single();
 
           if (techError) {
-            console.warn("Error fetching technician record:", techError);
             setTechnician(null);
           } else {
             setTechnician(techData);
           }
-        } catch (techError) {
-          console.warn(
-            "Unexpected error fetching technician record:",
-            techError
-          );
+        } catch (_techError) {
           setTechnician(null);
         }
       } else {
@@ -115,8 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       return true;
-    } catch (error) {
-      console.error("Unexpected error in fetchProfile:", error);
+    } catch (_error) {
       setError("Failed to load user data");
       return false;
     }
@@ -135,15 +123,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoading(true);
         setError(null);
 
-        console.log("Auth: Attempting sign in for", email);
-
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
-          console.error("Sign in error:", error);
           setLoading(false);
           return { success: false, error: error.message };
         }
@@ -153,7 +138,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           return { success: false, error: "No user data returned" };
         }
 
-        console.log("Auth: Sign in successful, fetching profile");
         setUserId(data.user.id);
         setAuthState("signed_in");
         const profileLoaded = await fetchProfile(data.user.id);
@@ -165,18 +149,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setLoading(false);
         return { success: true };
-      } catch (error) {
-        console.error("Unexpected sign in error:", error);
+      } catch (err) {
         setLoading(false);
         return {
           success: false,
           error:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred",
+            err instanceof Error ? err.message : "An unexpected error occurred",
         };
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [fetchProfile]
   );
@@ -187,7 +167,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const timeoutId = window.setTimeout(() => {
       if (!mountedRef.current) return;
       if (loading && authState === "unknown") {
-        console.warn("Auth: Watchdog releasing loading after timeout");
         setLoading(false);
       }
     }, 8000);
@@ -197,7 +176,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Sign out function
   const signOut = useCallback(async () => {
     try {
-      console.log("Auth: Signing out");
       await supabase.auth.signOut();
 
       // Clear local state
@@ -205,13 +183,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setTechnician(null);
       setError(null);
       setLoading(false);
-    } catch (error) {
-      console.error("Error signing out:", error);
+      // Immediately reflect signed-out state in UI; onAuthStateChange will also confirm
+      setAuthState("signed_out");
+      setUserId(null);
+    } catch (_error) {
       // Still clear local state even if signOut fails
       setProfile(null);
       setTechnician(null);
       setError(null);
       setLoading(false);
+      setAuthState("signed_out");
+      setUserId(null);
     }
   }, []);
 
@@ -220,9 +202,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (authState !== "signed_in" || !userId || profile) return;
     const timeoutId = window.setTimeout(() => {
       if (mountedRef.current && !profile) {
-        console.warn(
-          "Auth: Profile hydration slow; applying minimal profile fallback"
-        );
         const minimalProfile = {
           id: userId as unknown as string,
           user_id: userId as unknown as string,
@@ -241,7 +220,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const initializeAuth = async () => {
       try {
-        console.log("Auth: Initializing authentication");
         setLoading(true);
         setError(null);
 
@@ -252,7 +230,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         } = await supabase.auth.getSession();
 
         if (sessionError) {
-          console.error("Error getting session:", sessionError);
           if (mounted) {
             setError("Failed to check authentication status");
             setLoading(false);
@@ -263,14 +240,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         if (!mounted) return;
 
         if (session?.user) {
-          console.log("Auth: Existing session found, loading profile");
           setUserId(session.user.id);
           setAuthState("signed_in");
 
           // Check if session is expired
           const now = Math.floor(Date.now() / 1000);
           if (session.expires_at && session.expires_at < now) {
-            console.log("Auth: Session expired, signing out");
             await supabase.auth.signOut();
             if (mounted) {
               setProfile(null);
@@ -288,14 +263,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setError("Failed to load user profile");
           }
         } else {
-          console.log("Auth: No existing session");
           if (mounted) {
             setLoading(false);
             setAuthState("signed_out");
           }
         }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
+      } catch (_error) {
         if (mounted) {
           setError("Failed to initialize authentication");
           setLoading(false);
@@ -311,11 +284,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      console.log("Auth: Auth state changed", event, !!session?.user);
-
       try {
         if (event === "SIGNED_IN" && session?.user) {
-          console.log("Auth: User signed in, loading profile");
           setUserId(session.user.id);
           setAuthState("signed_in");
           // Fetch profile in background; do not toggle global loading
@@ -324,7 +294,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setError("Failed to load user profile");
           }
         } else if (event === "SIGNED_OUT") {
-          console.log("Auth: User signed out");
           setProfile(null);
           setTechnician(null);
           setUserId(null);
@@ -332,7 +301,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setError(null);
           setLoading(false);
         } else if (event === "TOKEN_REFRESHED" && session?.user) {
-          console.log("Auth: Token refreshed, ensuring profile is loaded");
           setUserId(session.user.id);
           setAuthState("signed_in");
           if (!profile) {
@@ -342,10 +310,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           }
         } else if (event === "PASSWORD_RECOVERY") {
-          console.log("Auth: Password recovery initiated");
           setError("Password recovery email sent. Please check your inbox.");
         } else if (event === "USER_UPDATED" && session?.user) {
-          console.log("Auth: User updated, refreshing profile");
           setUserId(session.user.id);
           setAuthState("signed_in");
           const profileLoaded = await fetchProfile(session.user.id);
@@ -353,8 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setError("Failed to refresh user profile");
           }
         }
-      } catch (error) {
-        console.error("Error in auth state change handler:", error);
+      } catch (_error) {
         setError("Authentication error occurred");
         setLoading(false);
       }

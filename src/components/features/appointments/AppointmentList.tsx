@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/auth";
 import { useRBAC } from "@/hooks/rbac";
 import { AppointmentCard } from "./AppointmentCard";
 import { Button } from "@/components/ui/Button";
+import { SkeletonCard, SkeletonList } from "@/components/ui/Skeleton";
 import {
   Wrench,
   Filter,
@@ -125,10 +126,24 @@ export const AppointmentList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading appointments...</p>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl" />
+          <div className="flex-1">
+            <div className="h-6 w-40 bg-gray-200 rounded mb-2" />
+            <div className="h-4 w-64 bg-gray-200 rounded" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {viewMode === 'compact' ? (
+            <SkeletonList items={6} />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonCard key={i} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

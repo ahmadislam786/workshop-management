@@ -31,6 +31,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     setIsSuccess(false);
 
     try {
+      // Basic client-side validation
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        setError("Please enter a valid email address");
+        return;
+      }
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters");
+        return;
+      }
       const result = await signIn(email, password);
       if (!result.success) {
         setError(result.error || "An error occurred");

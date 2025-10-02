@@ -28,7 +28,7 @@ interface AppointmentCardProps {
   mode?: "regular" | "compact" | "detailed";
 }
 
-export const AppointmentCard: React.FC<AppointmentCardProps> = ({
+const AppointmentCardInner: React.FC<AppointmentCardProps> = ({
   appointment,
   mode = "regular",
 }) => {
@@ -728,3 +728,5 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
     </>
   );
 };
+
+export const AppointmentCard = React.memo(AppointmentCardInner);
