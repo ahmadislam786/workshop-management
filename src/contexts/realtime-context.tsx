@@ -174,12 +174,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
       },
     });
 
-    // jobs (optional in current schema) -> trigger full refresh if present
-    subscribeTable("jobs", {
-      onInsert: () => refreshAll(),
-      onUpdate: () => refreshAll(),
-      onDelete: () => refreshAll(),
-    });
+    // jobs table removed in schema cleanup; no subscription
 
     return () => {
       removeAllChannels();
@@ -220,4 +215,24 @@ export const useRealtime = () => {
     throw new Error("useRealtime must be used within a RealtimeProvider");
   }
   return context;
+};
+
+// Network and visibility-aware auto-reconnect hook
+// Ensures realtime subscriptions are restored when the app regains focus or network
+export const useRealtimeAutoReconnect = () => {
+  const { reconnect } = useRealtime();
+  const { authState } = useAuth();
+
+  React.useEffect(() => {
+    const onOnline = () => reconnect();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") reconnect();
+    };
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [reconnect, authState]);
 };

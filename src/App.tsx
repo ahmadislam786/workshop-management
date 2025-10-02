@@ -20,12 +20,14 @@ import { DayViewPlanner } from "@/components/features/scheduling/DayViewPlanner"
 import { LoginForm } from "@/components/features/LoginForm";
 import { NotificationInitializer } from "@/components/shared/NotificationInitializer";
 import { FullPageLoading } from "@/components/shared/LoadingSpinner";
+import { useRealtimeAutoReconnect } from "@/contexts/realtime-context";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const AppContent: React.FC = () => {
   const { profile, loading, authState } = useAuth();
   const { refreshAll } = useData();
+  useRealtimeAutoReconnect();
   const [activeTab, setActiveTab] = useState(() =>
     typeof window !== "undefined"
       ? window.localStorage.getItem("activeTab") || "dashboard"

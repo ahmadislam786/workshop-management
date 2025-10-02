@@ -71,7 +71,7 @@ export const VehicleList: React.FC = () => {
     try {
       await refreshAll();
       toast.success("Data refreshed successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to refresh data");
     } finally {
       setIsRefreshing(false);
@@ -99,6 +99,10 @@ export const VehicleList: React.FC = () => {
         await updateVehicle(editingVehicle.id, formData);
         setEditingVehicle(null);
       } else {
+        if (!formData.customer_id) {
+          toast.error("Owner is required");
+          return;
+        }
         await createVehicle(formData);
       }
 
@@ -166,7 +170,7 @@ export const VehicleList: React.FC = () => {
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          {viewMode === 'grid' ? (
+          {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />

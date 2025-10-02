@@ -71,7 +71,11 @@ export const TechnicianList: React.FC = () => {
       toast.error("Name is required");
       return;
     }
-    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
+    if (!formData.email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       toast.error("Please enter a valid email address");
       return;
     }
@@ -372,13 +376,14 @@ export const TechnicianList: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                  Email *
                 </label>
                 <input
                   type="email"
                   placeholder="Enter email address"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
