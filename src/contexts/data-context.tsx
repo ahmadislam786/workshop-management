@@ -881,7 +881,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     if (authLoading) return;
     if (authState === "signed_in" && profileUserId) {
-      
+      // Mark entities as loading immediately to avoid empty UI flash after refresh
+      dispatch({ type: "SET_LOADING", entity: "customers", loading: true });
+      dispatch({ type: "SET_LOADING", entity: "vehicles", loading: true });
+      dispatch({ type: "SET_LOADING", entity: "appointments", loading: true });
+      dispatch({ type: "SET_LOADING", entity: "technicians", loading: true });
       refreshAll();
     }
     if (authState === "signed_out") {

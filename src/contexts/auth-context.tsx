@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           } else {
             setTechnician(techData);
           }
-        } catch (_techError) {
+        } catch {
           setTechnician(null);
         }
       } else {
@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       return true;
-    } catch (_error) {
+    } catch {
       setError("Failed to load user data");
       return false;
     }
@@ -186,7 +186,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       // Immediately reflect signed-out state in UI; onAuthStateChange will also confirm
       setAuthState("signed_out");
       setUserId(null);
-    } catch (_error) {
+    } catch {
       // Still clear local state even if signOut fails
       setProfile(null);
       setTechnician(null);
@@ -223,7 +223,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoading(true);
         setError(null);
 
-        // Get current session
+        // Get current session (ensures persistence on Vercel hard refresh)
         const {
           data: { session },
           error: sessionError,
@@ -256,7 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             return;
           }
 
-          // Do not block UI on profile hydration
+          // Do not block UI on profile hydration but ensure we show 'signed in'
           setLoading(false);
           const profileLoaded = await fetchProfile(session.user.id);
           if (mounted && !profileLoaded) {
@@ -268,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setAuthState("signed_out");
           }
         }
-      } catch (_error) {
+      } catch {
         if (mounted) {
           setError("Failed to initialize authentication");
           setLoading(false);
@@ -319,7 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             setError("Failed to refresh user profile");
           }
         }
-      } catch (_error) {
+      } catch {
         setError("Authentication error occurred");
         setLoading(false);
       }
