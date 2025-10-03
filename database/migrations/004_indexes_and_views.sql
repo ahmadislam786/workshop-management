@@ -16,8 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_schedule_assignments_tech_date_status ON schedule
 -- Customer + Vehicle lookups (appointment context)
 CREATE INDEX IF NOT EXISTS idx_vehicles_customer_license ON vehicles(customer_id, license_plate);
 
--- Notification queries (user + read status)
-CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read);
+-- notifications removed
 
 -- Skill-based queries (technician + skill proficiency)
 CREATE INDEX IF NOT EXISTS idx_technician_skills_tech_proficiency ON technician_skills(technician_id, proficiency_level);

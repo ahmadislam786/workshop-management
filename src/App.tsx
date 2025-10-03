@@ -3,7 +3,6 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { DataProvider } from "@/contexts/data-context";
 import { RealtimeProvider } from "@/contexts/realtime-context";
 import { LanguageProvider } from "@/contexts/language-context";
-import { NotificationProvider } from "@/contexts/notification-context";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { useAuth } from "@/contexts/auth-context";
 import { useData } from "@/contexts/data-context";
@@ -18,7 +17,6 @@ import { Leitstand } from "@/components/features/scheduling/Leitstand";
 import { Plantafel } from "@/components/features/scheduling/Plantafel";
 import { DayViewPlanner } from "@/components/features/scheduling/DayViewPlanner";
 import { LoginForm } from "@/components/features/LoginForm";
-import { NotificationInitializer } from "@/components/shared/NotificationInitializer";
 import { FullPageLoading } from "@/components/shared/LoadingSpinner";
 import { useRealtimeAutoReconnect } from "@/contexts/realtime-context";
 import { ToastContainer } from "react-toastify";
@@ -114,7 +112,6 @@ const AppContent: React.FC = () => {
 
   return (
     <>
-      <NotificationInitializer />
       <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
         {renderContent()}
       </Layout>
@@ -129,20 +126,18 @@ const App: React.FC = () => {
         <AuthProvider>
           <DataProvider>
             <RealtimeProvider>
-              <NotificationProvider>
-                <AppContent />
-                <ToastContainer
-                  position="top-right"
-                  autoClose={3000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick
-                  rtl={false}
-                  pauseOnFocusLoss
-                  draggable
-                  pauseOnHover
-                />
-              </NotificationProvider>
+              <AppContent />
+              <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+              />
             </RealtimeProvider>
           </DataProvider>
         </AuthProvider>

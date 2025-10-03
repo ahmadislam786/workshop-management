@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/config/supabase";
 import type { Appointment, ScheduleAssignment } from "@/types";
 import { toast } from "react-toastify";
-import { NotificationService } from "@/services/notifications/notification-service";
 
 export const useAppointments = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -99,26 +98,7 @@ export const useAppointments = () => {
         );
         // Don't show toast here - let the calling component handle it
 
-        // Create notification for status changes (only for important status changes)
-        if (
-          oldAppointment &&
-          updates.status &&
-          oldAppointment.status !== updates.status &&
-          updates.status === "completed"
-        ) {
-          try {
-            await NotificationService.notifyAppointmentStatusChange(
-              id,
-              oldAppointment.status,
-              updates.status
-            );
-          } catch (notificationError) {
-            console.error(
-              "Failed to create status change notification:",
-              notificationError
-            );
-          }
-        }
+        // Notifications removed
 
         return data;
       } catch (err) {

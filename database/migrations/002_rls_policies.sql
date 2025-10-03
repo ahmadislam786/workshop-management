@@ -77,7 +77,7 @@ ALTER TABLE services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE parts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE technician_skills ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+-- notifications removed
 
 -- =============================================
 -- DROP EXISTING POLICIES
@@ -106,8 +106,7 @@ DROP POLICY IF EXISTS "Anyone can view skills" ON skills;
 DROP POLICY IF EXISTS "Anyone can manage skills" ON skills;
 DROP POLICY IF EXISTS "Anyone can view technician skills" ON technician_skills;
 DROP POLICY IF EXISTS "Anyone can manage technician skills" ON technician_skills;
-DROP POLICY IF EXISTS "Anyone can view notifications" ON notifications;
-DROP POLICY IF EXISTS "Anyone can manage notifications" ON notifications;
+-- notifications removed
 
 -- =============================================
 -- PROFILE POLICIES
@@ -314,21 +313,7 @@ CREATE POLICY "technician_skills_manage_admin" ON technician_skills
 -- NOTIFICATIONS POLICIES
 -- =============================================
 
--- Users can view their own notifications
-CREATE POLICY "notifications_select_own" ON notifications
-  FOR SELECT USING (user_id = auth.uid());
-
--- Users can update their own notifications
-CREATE POLICY "notifications_update_own" ON notifications
-  FOR UPDATE USING (user_id = auth.uid());
-
--- Admins can view all notifications
-CREATE POLICY "notifications_select_admin" ON notifications
-  FOR SELECT USING (is_admin());
-
--- Admins can manage all notifications
-CREATE POLICY "notifications_manage_admin" ON notifications
-  FOR ALL USING (is_admin());
+-- notifications removed
 
 -- =============================================
 -- GRANT PERMISSIONS

@@ -217,17 +217,7 @@ WHERE NOT EXISTS (
     AND ta.type = v.type
 );
 
--- =============================================
--- SAMPLE NOTIFICATIONS
--- =============================================
-
--- Insert sample notifications (these would normally be created by triggers)
-INSERT INTO notifications (user_id, message, type, is_read, created_at) VALUES
--- Note: These are sample notifications - in production, these would be created by the notification system
--- For now, we'll insert them with a placeholder user_id
-('00000000-0000-0000-0000-000000000000', 'New appointment created for Hans Mueller', 'info', false, NOW()),
-('00000000-0000-0000-0000-000000000000', 'Parts ordered for brake service', 'success', false, NOW()),
-('00000000-0000-0000-0000-000000000000', 'Technician Markus on vacation tomorrow', 'warning', false, NOW());
+-- notifications removed
 
 -- =============================================
 -- VERIFICATION QUERIES

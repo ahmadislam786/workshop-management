@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/auth";
 import { useLanguage } from "@/contexts/language-context";
-import { useNotifications } from "@/contexts/notification-context";
 import { useRBAC } from "@/hooks/rbac";
 import { Button } from "@/components/ui/Button";
-import { NotificationPanel } from "@/components/shared/NotificationPanel";
 import {
   Wrench,
   User,
@@ -35,11 +33,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { profile, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const { unreadCount } = useNotifications();
   const { canAccessNavigation, getFilteredNavigationItems } = useRBAC();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
-  const [isNotificationPanelOpen, setIsNotificationPanelOpen] = useState(false);
   const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">(
     "desktop"
   );
@@ -421,25 +417,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   : ""
               }`}
             >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsNotificationPanelOpen(true)}
-                className={`w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 relative ${
-                  isCollapsed && screenSize !== "mobile" ? "justify-center" : ""
-                }`}
-                aria-label={t("user.notifications")}
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-                {(!isCollapsed || screenSize === "mobile") && (
-                  <span className="ml-2">{t("user.notifications")}</span>
-                )}
-              </Button>
+              
 
               <Button
                 variant="ghost"
@@ -460,11 +438,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Notification Panel */}
-      <NotificationPanel
-        isOpen={isNotificationPanelOpen}
-        onClose={() => setIsNotificationPanelOpen(false)}
-      />
+      
     </>
   );
 };

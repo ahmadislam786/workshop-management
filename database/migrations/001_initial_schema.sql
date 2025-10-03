@@ -11,7 +11,7 @@
 DROP TABLE IF EXISTS schedule_assignments CASCADE;
 DROP TABLE IF EXISTS technician_absences CASCADE;
 DROP TABLE IF EXISTS appointments CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
+-- notifications removed
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS jobs CASCADE; -- Remove legacy jobs table
 DROP TABLE IF EXISTS teams CASCADE; -- Remove unused teams table
@@ -166,21 +166,7 @@ CREATE TABLE IF NOT EXISTS technician_skills (
   UNIQUE(technician_id, skill_id)
 );
 
--- =============================================
--- NOTIFICATIONS TABLE
--- =============================================
-
--- Notifications table
-CREATE TABLE notifications (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL,
-  message TEXT NOT NULL,
-  type VARCHAR(20) DEFAULT 'info' CHECK (type IN ('info', 'success', 'warning', 'error')),
-  is_read BOOLEAN DEFAULT FALSE,
-  action_link TEXT,
-  action_label VARCHAR(100),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- notifications removed
 
 -- =============================================
 -- PRIMARY INDEXES FOR PERFORMANCE
@@ -221,9 +207,7 @@ CREATE INDEX IF NOT EXISTS idx_technician_skills_technician_id ON technician_ski
 CREATE INDEX IF NOT EXISTS idx_technician_skills_skill_id ON technician_skills(skill_id);
 CREATE INDEX IF NOT EXISTS idx_technician_skills_proficiency ON technician_skills(proficiency_level);
 
--- Notification indexes
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
+-- notifications removed
 
 -- =============================================
 -- TRIGGERS FOR UPDATED_AT
