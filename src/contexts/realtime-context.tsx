@@ -37,6 +37,54 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [error, setError] = useState<string | null>(null);
   const [resubscribeKey, setResubscribeKey] = useState(0);
 
+  // Keep realtime auth token in sync with current session and reconnect when it changes
+  useEffect(() => {
+    let isMounted = true;
+    const syncToken = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const accessToken = session?.access_token || null;
+      try {
+        const rt: unknown = (supabase as unknown as { realtime?: { setAuth?: (token: string | null) => void } }).realtime;
+        if (rt && typeof (rt as { setAuth?: (token: string | null) => void }).setAuth === "function") {
+          (rt as { setAuth: (token: string | null) => void }).setAuth(accessToken);
+        }
+      } catch {
+        // noop
+      }
+      // If we have a token and are signed in, ensure subscriptions are active
+      if (isMounted && authState === "signed_in" && userId) {
+        setResubscribeKey(k => k + 1);
+      }
+    };
+
+    syncToken();
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      try {
+        const rt: unknown = (supabase as unknown as { realtime?: { setAuth?: (token: string | null) => void } }).realtime;
+        if (rt && typeof (rt as { setAuth?: (token: string | null) => void }).setAuth === "function") {
+          (rt as { setAuth: (token: string | null) => void }).setAuth(session?.access_token || null);
+        }
+      } catch {
+        // noop
+      }
+      if (isMounted && session?.access_token) {
+        // Token rotated/refreshed – resubscribe and refresh data
+        setResubscribeKey(k => k + 1);
+        if (authState === "signed_in" && userId) {
+          refreshAll();
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, [authState, userId, refreshAll]);
+
   // Ensure we never leak channels
   const removeAllChannels = useMemo(
     () => () => {

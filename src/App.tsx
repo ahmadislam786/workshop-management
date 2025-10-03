@@ -32,13 +32,12 @@ const AppContent: React.FC = () => {
       : "dashboard"
   );
 
-  // Initialize data when user is authenticated
+  // Initialize data after session restoration on every refresh
   useEffect(() => {
-    if (profile) {
-      // Prime caches in the background; do not block UI
+    if (authState === "signed_in") {
       refreshAll().catch(() => {});
     }
-  }, [profile, refreshAll]);
+  }, [authState, refreshAll]);
 
   // Persist active tab across refreshes
   useEffect(() => {
