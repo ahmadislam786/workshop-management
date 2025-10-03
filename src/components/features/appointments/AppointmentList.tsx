@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useData } from "@/contexts/data-context";
-import { useAuth } from "@/hooks/auth";
+import { useAuth } from "@/contexts/auth-context";
 import { useRBAC } from "@/hooks/rbac";
 import { AppointmentCard } from "./AppointmentCard";
 import { Button } from "@/components/ui/Button";

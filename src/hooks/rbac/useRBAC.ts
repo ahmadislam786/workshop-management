@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/auth";
+import { useAuth } from "@/contexts/auth-context";
 import {
   hasPermission,
   canRead,
@@ -33,61 +33,65 @@ export const useRBAC = () => {
     user: profile,
     technician,
     role: profile?.role as UserRole | null,
-    
+
     // Role checks
     isAdmin: isAdmin(profile),
     isTechnician: isTechnician(profile),
-    
+
     // Permission checks
     hasPermission: (resource: string, action: string, context?: any) =>
       hasPermission(profile, resource, action, context),
-    
+
     canRead: (resource: string, context?: any) =>
       canRead(profile, resource, context),
-    
+
     canCreate: (resource: string, context?: any) =>
       canCreate(profile, resource, context),
-    
+
     canUpdate: (resource: string, context?: any) =>
       canUpdate(profile, resource, context),
-    
+
     canDelete: (resource: string, context?: any) =>
       canDelete(profile, resource, context),
-    
+
     // Navigation checks
     canAccessNavigation: (navigationItem: string) =>
       canAccessNavigation(profile, navigationItem),
-    
+
     // Admin feature checks
     canAccessAdminFeatures: canAccessAdminFeatures(profile),
     canManageUsers: canManageUsers(profile),
     canViewReports: canViewReports(profile),
     canAccessSystemSettings: canAccessSystemSettings(profile),
-    
+
     // Appointment-specific checks
     canViewAppointment: (appointment: any, assignments: any[]) =>
       canViewAppointment(profile, appointment, assignments),
-    
+
     canUpdateAppointment: (appointment: any, assignments: any[]) =>
       canUpdateAppointment(profile, appointment, assignments),
-    
+
     // Resource access
     hasAnyPermissionForResource: (resource: string) =>
       hasAnyPermissionForResource(profile, resource),
-    
-    getUserAccessibleResources: () =>
-      getUserAccessibleResources(profile),
-    
+
+    getUserAccessibleResources: () => getUserAccessibleResources(profile),
+
     // Navigation filtering
-    getFilteredNavigationItems: (allItems: Array<{ id: string; [key: string]: any }>) =>
-      getFilteredNavigationItems(profile, allItems),
+    getFilteredNavigationItems: (
+      allItems: Array<{ id: string; [key: string]: any }>
+    ) => getFilteredNavigationItems(profile, allItems),
   };
 };
 
 /**
  * Hook for checking specific permissions
  */
-export const usePermission = (resource: string, action: string, context?: any) => {
+export const usePermission = (
+  resource: string,
+  action: string,
+  context?: any
+) => {
   const { profile } = useAuth();
   return hasPermission(profile, resource, action, context);
 };
@@ -105,7 +109,7 @@ export const useNavigationAccess = (navigationItem: string) => {
  */
 export const useAdminAccess = () => {
   const { profile } = useAuth();
-  
+
   return {
     canAccessAdminFeatures: canAccessAdminFeatures(profile),
     canManageUsers: canManageUsers(profile),
@@ -119,11 +123,11 @@ export const useAdminAccess = () => {
  */
 export const useAppointmentAccess = () => {
   const { profile } = useAuth();
-  
+
   return {
     canViewAppointment: (appointment: any, assignments: any[]) =>
       canViewAppointment(profile, appointment, assignments),
-    
+
     canUpdateAppointment: (appointment: any, assignments: any[]) =>
       canUpdateAppointment(profile, appointment, assignments),
   };

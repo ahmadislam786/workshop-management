@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { Appointment } from "@/types";
-import { useAuth } from "@/hooks/auth";
+import { useAuth } from "@/contexts/auth-context";
 import { useAppointments } from "@/hooks/api";
 import {
   User,

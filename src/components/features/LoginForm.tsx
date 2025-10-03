@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { useAuth } from "@/hooks/auth";
-import { 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
+import { useAuth } from "@/contexts/auth-context";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
   AlertCircle,
   Loader2,
-  CheckCircle
+  CheckCircle,
 } from "lucide-react";
 
 interface LoginFormProps {
@@ -50,13 +50,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           onSuccess?.();
         }, 1000);
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -66,9 +65,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-float">
             <Lock className="h-8 w-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Welcome Back
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
           <p className="text-blue-100 text-sm">
             Sign in to your workshop dashboard
           </p>
@@ -79,7 +76,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -95,7 +95,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500"
                   placeholder="Enter your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   disabled={loading}
                 />
               </div>
@@ -103,7 +103,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700"
+              >
                 Password
               </label>
               <div className="relative">
@@ -119,7 +122,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                   className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-900 placeholder-gray-500"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   disabled={loading}
                 />
                 <button
@@ -168,7 +171,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                 className="w-full h-12 text-base font-semibold"
                 disabled={loading || isSuccess}
                 loading={loading}
-                leftIcon={loading ? <Loader2 className="h-5 w-5 animate-spin" /> : undefined}
+                leftIcon={
+                  loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : undefined
+                }
               >
                 {loading ? "Signing in..." : isSuccess ? "Success!" : "Sign In"}
               </Button>

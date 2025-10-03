@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar";
-import { useAuth } from "@/hooks/auth";
+import { useAuth } from "@/contexts/auth-context";
 import { useLanguage } from "@/contexts/language-context";
 import { LoginForm } from "@/components/features/LoginForm";
 import { Button } from "@/components/ui/Button";
