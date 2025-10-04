@@ -470,29 +470,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
           case "customers":
             dispatch({
               type: "SET_CUSTOMERS",
-              customers: (data as Customer[]) || [],
+              customers: Array.isArray(data) ? (data as unknown as Customer[]) : [],
             });
             break;
           case "vehicles":
             dispatch({
               type: "SET_VEHICLES",
-              vehicles: (data as Vehicle[]) || [],
+              vehicles: Array.isArray(data) ? (data as unknown as Vehicle[]) : [],
             });
             break;
           case "appointments":
             dispatch({
               type: "SET_APPOINTMENTS",
-              appointments: (data as Appointment[]) || [],
+              appointments: Array.isArray(data) ? (data as unknown as Appointment[]) : [],
             });
             break;
           case "technicians":
             dispatch({
               type: "SET_TECHNICIANS",
-              technicians: (data as Technician[]) || [],
+              technicians: Array.isArray(data) ? (data as unknown as Technician[]) : [],
             });
             break;
           default:
-            
+            break;
         }
 
         

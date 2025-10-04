@@ -18,7 +18,6 @@ import {
   getUserAccessibleResources,
   getFilteredNavigationItems,
   type UserRole,
-  type Permission,
 } from "@/utils/validation/rbac";
 
 /**

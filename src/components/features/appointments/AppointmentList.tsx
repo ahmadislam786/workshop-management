@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useData } from "@/contexts/data-context";
 import { useAuth } from "@/contexts/auth-context";
 import { useRBAC } from "@/hooks/rbac";
@@ -13,11 +13,10 @@ import {
   Calendar,
   Search,
   RefreshCw,
-  Settings,
 } from "lucide-react";
 
 export const AppointmentList: React.FC = () => {
-  const { state, fetchAppointments, refreshAll } = useData();
+  const { state, refreshAll } = useData();
   const { profile, technician } = useAuth();
   const { canViewAppointment } = useRBAC();
   
@@ -49,7 +48,7 @@ export const AppointmentList: React.FC = () => {
   const accessibleAppointments = useMemo(() => {
     return myScope.filter(appointment => {
       try {
-        return canViewAppointment(appointment);
+        return canViewAppointment(appointment, []);
       } catch {
         return false;
       }
@@ -355,7 +354,7 @@ export const AppointmentList: React.FC = () => {
               >
                 <AppointmentCard
                   appointment={appointment}
-                  viewMode={viewMode}
+                  mode={viewMode}
                 />
               </div>
             ))}

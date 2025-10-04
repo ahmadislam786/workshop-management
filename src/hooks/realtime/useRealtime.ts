@@ -119,7 +119,7 @@ export const useRealtime = () => {
     const interval = setInterval(() => {
       const now = new Date();
       const staleConnections = Object.entries(connections).filter(
-        ([table, conn]) => {
+        ([, conn]) => {
           if (!conn.connected || !conn.lastUpdate) return false;
           const timeSinceUpdate = now.getTime() - conn.lastUpdate.getTime();
           return timeSinceUpdate > 60000; // 1 minute

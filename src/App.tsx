@@ -73,7 +73,7 @@ const AppContent: React.FC = () => {
   }
 
   const renderContent = () => {
-    if (profile.role === "admin") {
+    if (profile?.role === "admin") {
       switch (activeTab) {
         case "dashboard":
           return <AdminDashboard onNavigate={setActiveTab} />;

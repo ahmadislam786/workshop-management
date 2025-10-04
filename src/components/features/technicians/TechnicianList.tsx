@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { Technician } from "@/types";
 import { useData } from "@/contexts/data-context";
 import { Button } from "@/components/ui/Button";
@@ -22,10 +22,18 @@ import {
 import { toast } from "react-toastify";
 
 export const TechnicianList: React.FC = () => {
-  const { state, fetchTechnicians, createTechnician, updateTechnician, deleteTechnician, refreshAll } = useData();
+  const {
+    state,
+    createTechnician,
+    updateTechnician,
+    deleteTechnician,
+    refreshAll,
+  } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null);
+  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(
+    null
+  );
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -47,7 +55,7 @@ export const TechnicianList: React.FC = () => {
       return (
         technician.name.toLowerCase().includes(searchLower) ||
         technician.email.toLowerCase().includes(searchLower) ||
-        technician.phone.includes(searchLower)
+        (technician.phone?.includes(searchLower) ?? false)
       );
     });
   }, [technicians, searchTerm]);
@@ -66,7 +74,7 @@ export const TechnicianList: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
       toast.error("Name is required");
       return;
@@ -91,7 +99,7 @@ export const TechnicianList: React.FC = () => {
       } else {
         await createTechnician(formData);
       }
-      
+
       setShowForm(false);
       setFormData({ name: "", email: "", phone: "" });
     } catch (error) {
@@ -104,7 +112,7 @@ export const TechnicianList: React.FC = () => {
     setFormData({
       name: technician.name,
       email: technician.email,
-      phone: technician.phone,
+      phone: technician.phone || "",
     });
     setShowForm(true);
   };
@@ -132,7 +140,7 @@ export const TechnicianList: React.FC = () => {
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          {viewMode === 'grid' ? (
+          {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
@@ -150,7 +158,9 @@ export const TechnicianList: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 mb-4">Error loading technicians: {error}</div>
+          <div className="text-red-500 mb-4">
+            Error loading technicians: {error}
+          </div>
           <Button onClick={handleRefresh} variant="outline">
             Try Again
           </Button>
@@ -170,11 +180,12 @@ export const TechnicianList: React.FC = () => {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Technicians</h1>
             <p className="text-gray-600">
-              {filteredTechnicians.length} technician{filteredTechnicians.length !== 1 ? 's' : ''} found
+              {filteredTechnicians.length} technician
+              {filteredTechnicians.length !== 1 ? "s" : ""} found
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -183,10 +194,12 @@ export const TechnicianList: React.FC = () => {
             disabled={isRefreshing}
             className="flex items-center gap-2"
           >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
-          
+
           <Button
             onClick={() => setShowForm(true)}
             className="flex items-center gap-2"
@@ -208,7 +221,7 @@ export const TechnicianList: React.FC = () => {
                 type="text"
                 placeholder="Search technicians..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -255,10 +268,9 @@ export const TechnicianList: React.FC = () => {
             {searchTerm ? "No technicians found" : "No technicians yet"}
           </h3>
           <p className="text-gray-600 mb-6">
-            {searchTerm 
-              ? "Try adjusting your search" 
-              : "Get started by adding your first technician"
-            }
+            {searchTerm
+              ? "Try adjusting your search"
+              : "Get started by adding your first technician"}
           </p>
           {!searchTerm && (
             <Button onClick={() => setShowForm(true)}>
@@ -268,10 +280,13 @@ export const TechnicianList: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className={viewMode === "grid" 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
-          : "space-y-4"
-        }>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
+          }
+        >
           {filteredTechnicians.map((technician, index) => (
             <div
               key={technician.id}
@@ -284,14 +299,16 @@ export const TechnicianList: React.FC = () => {
                     <User className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{technician.name}</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {technician.name}
+                    </h3>
                     <div className="flex items-center gap-1 mt-1">
                       <Star className="h-4 w-4 text-yellow-500" />
                       <span className="text-sm text-gray-600">Available</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -350,11 +367,7 @@ export const TechnicianList: React.FC = () => {
               <h2 className="text-xl font-semibold text-gray-900">
                 {editingTechnician ? "Edit Technician" : "New Technician"}
               </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCancel}
-              >
+              <Button variant="outline" size="sm" onClick={handleCancel}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -369,7 +382,9 @@ export const TechnicianList: React.FC = () => {
                   required
                   placeholder="Enter full name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -382,7 +397,9 @@ export const TechnicianList: React.FC = () => {
                   type="email"
                   placeholder="Enter email address"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -396,7 +413,9 @@ export const TechnicianList: React.FC = () => {
                   type="tel"
                   placeholder="Enter phone number"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -410,11 +429,10 @@ export const TechnicianList: React.FC = () => {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  className="flex-1"
-                >
-                  {editingTechnician ? "Update Technician" : "Create Technician"}
+                <Button type="submit" className="flex-1">
+                  {editingTechnician
+                    ? "Update Technician"
+                    : "Create Technician"}
                 </Button>
               </div>
             </form>

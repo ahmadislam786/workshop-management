@@ -70,7 +70,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     { 
       resource: "appointments", 
       action: "read",
-      condition: (user, context) => {
+      condition: (_, context) => {
         // Technicians can only read appointments assigned to them
         return context?.assignedToTechnician === true;
       }
@@ -78,7 +78,7 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     { 
       resource: "appointments", 
       action: "update",
-      condition: (user, context) => {
+      condition: (_, context) => {
         // Technicians can only update status of their assigned appointments
         return context?.assignedToTechnician === true;
       }
@@ -90,8 +90,8 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     { 
       resource: "schedule_assignments", 
       action: "read",
-      condition: (user, context) => {
-        return context?.technicianId === user.id;
+      condition: (_, context) => {
+        return context?.technicianId === context?.userId;
       }
     },
     // Read notifications

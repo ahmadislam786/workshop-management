@@ -14,7 +14,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Bell,
   Languages,
 } from "lucide-react";
 
@@ -33,7 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { profile, signOut } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const { canAccessNavigation, getFilteredNavigationItems } = useRBAC();
+  const { getFilteredNavigationItems } = useRBAC();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [screenSize, setScreenSize] = useState<"mobile" | "tablet" | "desktop">(

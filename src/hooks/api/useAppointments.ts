@@ -7,7 +7,7 @@ export const useAppointments = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const [realtimeConnected] = useState(false);
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ export const useAppointments = () => {
     async (id: string, updates: Partial<Appointment>) => {
       try {
         // Get the old appointment data to compare status changes
-        const oldAppointment = appointments.find(apt => apt.id === id);
+        // const oldAppointment = appointments.find(apt => apt.id === id);
 
         const { data, error } = await supabase
           .from("appointments")
@@ -193,7 +193,7 @@ export const useScheduleAssignments = () => {
   const [assignments, setAssignments] = useState<ScheduleAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const [realtimeConnected] = useState(false);
 
   const fetchAssignments = useCallback(async () => {
     try {

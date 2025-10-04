@@ -170,7 +170,10 @@ export const DayViewPlanner: React.FC = () => {
         );
         const availableAW = calculateAvailableAW(
           technician.aw_capacity_per_day,
-          technicianAbsences,
+          technicianAbsences.map(absence => ({
+            from_time: absence.start_date,
+            to_time: absence.end_date
+          })),
           technicianAssignments
         );
 

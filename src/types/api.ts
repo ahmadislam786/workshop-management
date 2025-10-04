@@ -50,6 +50,7 @@ export interface Technician {
   shift_end: string;
   aw_capacity_per_day: number;
   active: boolean;
+  specialization?: string;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +76,8 @@ export interface Appointment {
   priority: "low" | "normal" | "high" | "urgent";
   status: AppointmentStatus;
   required_skills: string[];
+  sla_promised_at?: string;
+  flags?: string[];
   created_at: string;
   updated_at: string;
   customer?: Customer;
